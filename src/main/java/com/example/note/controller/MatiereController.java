@@ -31,9 +31,9 @@ public class MatiereController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Matiere> getMatiereById(@PathVariable Long id) {
+    public ResponseEntity<MatiereDTO> getMatiereById(@PathVariable Long id) {
         Optional<Matiere> matiere = matiereRepository.findById(id);
-        return matiere.map(ResponseEntity::ok)
+        return matiere.map(m -> ResponseEntity.ok(new MatiereDTO(m.getId(), m.getNom())))
                 .orElse(ResponseEntity.notFound().build());
     }
 

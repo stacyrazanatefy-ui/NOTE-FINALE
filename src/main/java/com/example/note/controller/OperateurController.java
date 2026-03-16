@@ -31,9 +31,9 @@ public class OperateurController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Operateur> getOperateurById(@PathVariable Long id) {
+    public ResponseEntity<OperateurDTO> getOperateurById(@PathVariable Long id) {
         Optional<Operateur> operateur = operateurRepository.findById(id);
-        return operateur.map(ResponseEntity::ok)
+        return operateur.map(op -> ResponseEntity.ok(new OperateurDTO(op.getId(), op.getOperateur())))
                 .orElse(ResponseEntity.notFound().build());
     }
 

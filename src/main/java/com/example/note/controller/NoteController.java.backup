@@ -133,7 +133,7 @@ public class NoteController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Note> updateNote(@PathVariable Long id, 
+    public ResponseEntity<NoteDTO> updateNote(@PathVariable Long id, 
                                           @Valid @RequestBody Note noteDetails) {
         return noteRepository.findById(id)
                 .map(note -> {
@@ -148,9 +148,21 @@ public class NoteController {
                         note.setMatiere(matiere.get());
                         note.setCorrecteur(correcteur.get());
                         Note updatedNote = noteRepository.save(note);
-                        return ResponseEntity.ok(updatedNote);
+                        
+                        // Convert to DTO for response
+                        NoteDTO dto = new NoteDTO();
+                        dto.setId(updatedNote.getId());
+                        dto.setNote(updatedNote.getNote());
+                        dto.setCandidatNom(updatedNote.getCandidat() != null ? updatedNote.getCandidat().getNom() : "N/A");
+                        dto.setMatiereNom(updatedNote.getMatiere() != null ? updatedNote.getMatiere().getNom() : "N/A");
+                        dto.setCorrecteurNom(updatedNote.getCorrecteur() != null ? updatedNote.getCorrecteur().getNom() : "N/A");
+                        dto.setIdcandidat(updatedNote.getCandidat() != null ? updatedNote.getCandidat().getId() : null);
+                        dto.setIdmatiere(updatedNote.getMatiere() != null ? updatedNote.getMatiere().getId() : null);
+                        dto.setIdcorrecteur(updatedNote.getCorrecteur() != null ? updatedNote.getCorrecteur().getId() : null);
+                        
+                        return ResponseEntity.ok(dto);
                     }
-                    return ResponseEntity.badRequest().<Note>build();
+                    return ResponseEntity.badRequest().build();
                 })
                 .orElse(ResponseEntity.notFound().build());
     }

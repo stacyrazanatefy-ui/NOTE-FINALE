@@ -31,9 +31,9 @@ public class CandidatController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Candidat> getCandidatById(@PathVariable Long id) {
+    public ResponseEntity<CandidatDTO> getCandidatById(@PathVariable Long id) {
         Optional<Candidat> candidat = candidatRepository.findById(id);
-        return candidat.map(ResponseEntity::ok)
+        return candidat.map(c -> ResponseEntity.ok(new CandidatDTO(c.getId(), c.getNom())))
                 .orElse(ResponseEntity.notFound().build());
     }
 

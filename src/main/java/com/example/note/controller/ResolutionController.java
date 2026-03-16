@@ -31,9 +31,9 @@ public class ResolutionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Resolution> getResolutionById(@PathVariable Long id) {
+    public ResponseEntity<ResolutionDTO> getResolutionById(@PathVariable Long id) {
         Optional<Resolution> resolution = resolutionRepository.findById(id);
-        return resolution.map(ResponseEntity::ok)
+        return resolution.map(r -> ResponseEntity.ok(new ResolutionDTO(r.getId(), r.getNom())))
                 .orElse(ResponseEntity.notFound().build());
     }
 

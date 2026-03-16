@@ -31,9 +31,9 @@ public class CorrecteurController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Correcteur> getCorrecteurById(@PathVariable Long id) {
+    public ResponseEntity<CorrecteurDTO> getCorrecteurById(@PathVariable Long id) {
         Optional<Correcteur> correcteur = correcteurRepository.findById(id);
-        return correcteur.map(ResponseEntity::ok)
+        return correcteur.map(c -> ResponseEntity.ok(new CorrecteurDTO(c.getId(), c.getNom())))
                 .orElse(ResponseEntity.notFound().build());
     }
 
