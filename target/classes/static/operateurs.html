@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opérateurs - Système de Notes</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .header p {
+            opacity: 0.9;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 10px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .btn-add {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            padding: 12px 20px;
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-refresh {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 12px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-card {
+            background: rgba(40, 40, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(5px);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(40, 40, 40, 0.8);
+            color: #ffffff;
+        }
+
+        .operateur-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .operateur-card {
+            background: rgba(40, 40, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .operateur-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .operateur-id {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .operateur-symbol {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .operateur-name {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+        }
+
+        .card-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-edit, .btn-delete {
+            padding: 8px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+        }
+
+        .btn-delete {
+            background: rgba(244, 67, 54, 0.2);
+            color: #F44336;
+        }
+
+        .btn-edit:hover, .btn-delete:hover {
+            transform: translateY(-1px);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-save {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            padding: 12px 20px;
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 12px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">← Retour</a>
+            <h1>Opérateurs</h1>
+            <p>Gestion des opérateurs de comparaison</p>
+        </div>
+        
+        <div class="content">
+            <div class="actions-bar">
+                <button class="btn-add" onclick="showAddForm()">+ Ajouter un Opérateur</button>
+                <button class="btn-refresh" onclick="loadOperateurs()">Actualiser</button>
+            </div>
+
+            <div id="formContainer" style="display: none;">
+                <div class="form-card">
+                    <h3 id="formTitle">Ajouter un Opérateur</h3>
+                    <form id="operateurForm">
+                        <input type="hidden" id="operateurId">
+                        <div class="form-group">
+                            <label for="operateur">Symbole de l'opérateur:</label>
+                            <input type="text" id="operateur" placeholder="Ex: >, <, >=, <=" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-save">Enregistrer</button>
+                            <button type="button" class="btn-cancel" onclick="hideForm()">Annuler</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="operateursContainer">
+                <div class="loading">Chargement des opérateurs...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8084/api';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadOperateurs();
+        });
+
+        document.getElementById('operateurForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const operateurId = document.getElementById('operateurId').value;
+            const data = {
+                operateur: document.getElementById('operateur').value.trim()
+            };
+
+            try {
+                console.log('Données envoyées:', data);
+                
+                let response;
+                if (operateurId) {
+                    response = await fetch(`${API_BASE_URL}/operateurs/${operateurId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    response = await fetch(`${API_BASE_URL}/operateurs`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                }
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Erreur serveur:', errorText);
+                    alert('Erreur lors de la sauvegarde: ' + errorText);
+                    return;
+                }
+                
+                hideForm();
+                loadOperateurs();
+                alert('Opérateur sauvegardé avec succès!');
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur: ' + error.message);
+            }
+        });
+
+        async function loadOperateurs() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/operateurs`);
+                const operateurs = await response.json();
+                
+                const container = document.getElementById('operateursContainer');
+                container.innerHTML = '<div class="operateur-grid">' + 
+                    operateurs.map(operateur => `
+                        <div class="operateur-card">
+                            <div class="operateur-id">#${operateur.id}</div>
+                            <div class="operateur-symbol">${operateur.operateur}</div>
+                            <div class="operateur-name">Opérateur</div>
+                            <div class="card-actions">
+                                <button class="btn-edit" onclick="editOperateur(${operateur.id})">Modifier</button>
+                                <button class="btn-delete" onclick="deleteOperateur(${operateur.id})">Supprimer</button>
+                            </div>
+                        </div>
+                    `).join('') + '</div>';
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        function showAddForm() {
+            document.getElementById('formContainer').style.display = 'block';
+            document.getElementById('formTitle').textContent = 'Ajouter un Opérateur';
+            document.getElementById('operateurForm').reset();
+            document.getElementById('operateurId').value = '';
+        }
+
+        function hideForm() {
+            document.getElementById('formContainer').style.display = 'none';
+        }
+
+        async function editOperateur(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/operateurs/${id}`);
+                const operateur = await response.json();
+                
+                document.getElementById('formContainer').style.display = 'block';
+                document.getElementById('formTitle').textContent = 'Modifier un Opérateur';
+                document.getElementById('operateurId').value = operateur.id;
+                document.getElementById('operateur').value = operateur.operateur;
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        async function deleteOperateur(id) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cet opérateur ?')) {
+                try {
+                    await fetch(`${API_BASE_URL}/operateurs/${id}`, { method: 'DELETE' });
+                    loadOperateurs();
+                } catch (error) {
+                    console.error('Erreur:', error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

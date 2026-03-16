@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1), 
+                        0 4px 16px rgba(0, 0, 0, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.7) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .section {
+            background: rgba(40, 40, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(5px);
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .section h2 {
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            font-weight: 300;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 15px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #ffffff;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            font-size: 1em;
+            background: rgba(40, 40, 40, 0.8);
+            color: #ffffff;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            background: rgba(60, 60, 60, 0.9);
+        }
+
+        .form-group select option {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            color: #ffffff;
+            padding: 12px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2),
+                        0 2px 10px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.3),
+                        0 1px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .result {
+            background: rgba(30, 30, 30, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            margin-top: 30px;
+            display: none !important;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .result.show {
+            display: block !important;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(15px); 
+                filter: blur(5px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+                filter: blur(0);
+            }
+        }
+
+        .result h3 {
+            color: #ffffff;
+            margin-bottom: 25px;
+            font-size: 1.3em;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 15px;
+            text-align: center;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .info-item {
+            background: rgba(40, 40, 40, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .info-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .info-item:hover {
+            background: rgba(50, 50, 50, 0.9);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .info-item strong {
+            color: #ffffff;
+            display: block;
+            margin-bottom: 5px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+        }
+
+        .notes-list {
+            background: rgba(40, 40, 40, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .notes-list h4 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .note-item {
+            background: rgba(50, 50, 50, 0.8);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        .note-item:hover {
+            background: rgba(60, 60, 60, 0.9);
+            border-left-color: rgba(255, 255, 255, 0.5);
+            transform: translateX(5px);
+        }
+
+        .final-note {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .final-note::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .final-note h3 {
+            color: #ffffff;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 15px;
+            text-align: center;
+        }
+
+        .final-note .note-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .calculation-details {
+            background: rgba(40, 40, 40, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .calculation-details h4 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .calculation-details p {
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1em;
+        }
+
+        .loading::before {
+            content: '⚡';
+            display: block;
+            font-size: 2em;
+            margin-bottom: 15px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .error {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.5);
+            color: #ff6b6b;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            backdrop-filter: blur(5px);
+        }
+
+        .error::before {
+            content: '⚠️';
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .section {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            .btn {
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+            
+            .result {
+                padding: 20px;
+                margin-top: 20px;
+            }
+
+            .section h2 {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Note</h1>
+            <p>Système de calcul de notes finales</p>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <h2>Calcul de Note Finale</h2>
+                <form id="resultForm">
+                    <div class="form-group">
+                        <label for="candidat">Candidat:</label>
+                        <select id="candidat" required>
+                            <option value="">-- Sélectionner un candidat --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="matiere">Matière:</label>
+                        <select id="matiere" required>
+                            <option value="">-- Sélectionner une matière --</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn">Calculer la Note Finale</button>
+                </form>
+
+                <div id="result" class="result">
+                    <!-- Résultat sera affiché ici -->
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Gestion des Données</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <button type="button" class="btn" onclick="loadCandidats()" style="margin-bottom: 10px;">Afficher les Candidats</button>
+                        <button type="button" class="btn" onclick="loadMatieres()">Afficher les Matières</button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn" onclick="loadNotes()" style="margin-bottom: 10px;">Afficher les Notes</button>
+                        <button type="button" class="btn" onclick="loadCorrecteurs()">Afficher les Correcteurs</button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn" onclick="loadParametres()" style="margin-bottom: 10px;">Afficher les Paramètres</button>
+                        <button type="button" class="btn" onclick="loadOperateurs()">Afficher les Opérateurs</button>
+                        <button type="button" class="btn" onclick="loadResolutions()">Afficher les Résolutions</button>
+                    </div>
+                </div>
+
+                <div id="crudResult" class="result" style="display: none;">
+                    <!-- Données CRUD seront affichées ici -->
+                </div>
+            </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8084/api';
+
+        // Charger les données au démarrage
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadCandidatsOptions();
+            await loadMatieresOptions();
+        });
+
+        async function loadCandidatsOptions() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/candidats`);
+                if (!response.ok) throw new Error('Erreur lors du chargement des candidats');
+                
+                const candidats = await response.json();
+                const select = document.getElementById('candidat');
+                
+                candidats.forEach(candidat => {
+                    const option = document.createElement('option');
+                    option.value = candidat.id;
+                    option.textContent = candidat.nom;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        async function loadMatieresOptions() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/matieres`);
+                if (!response.ok) throw new Error('Erreur lors du chargement des matières');
+                
+                const matieres = await response.json();
+                const select = document.getElementById('matiere');
+                
+                matieres.forEach(matiere => {
+                    const option = document.createElement('option');
+                    option.value = matiere.id;
+                    option.textContent = matiere.nom;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        document.getElementById('resultForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const candidatId = document.getElementById('candidat').value;
+            const matiereId = document.getElementById('matiere').value;
+            
+            if (!candidatId || !matiereId) {
+                showError('Veuillez sélectionner un candidat et une matière');
+                return;
+            }
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">Calcul en cours...</div>';
+            resultDiv.classList.add('show');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/resultat?idCandidat=${candidatId}&idMatiere=${matiereId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayResult(data);
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Erreur lors du calcul: ' + error.message);
+            }
+        });
+
+        async function loadCandidats() {
+            window.location.href = 'candidats.html';
+        }
+
+        async function loadMatieres() {
+            window.location.href = 'matieres.html';
+        }
+
+        async function loadNotes() {
+            window.location.href = 'notes.html';
+        }
+
+        async function loadCorrecteurs() {
+            window.location.href = 'correcteurs.html';
+        }
+
+        async function loadParametres() {
+            window.location.href = 'parametres.html';
+        }
+
+        async function loadOperateurs() {
+            window.location.href = 'operateurs.html';
+        }
+
+        async function loadResolutions() {
+            window.location.href = 'resolutions.html';
+        }
+
+        function displayResult(data) {
+            const resultDiv = document.getElementById('result');
+            
+            const notesHtml = data.notesOriginales.map(note => 
+                `<div class="note-item">Note: ${note}</div>`
+            ).join('');
+
+            resultDiv.innerHTML = `
+                <h3>Résultat du Calcul</h3>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Candidat</strong>
+                        ${data.candidatNom}
+                    </div>
+                    <div class="info-item">
+                        <strong>Matière</strong>
+                        ${data.matiereNom}
+                    </div>
+                </div>
+
+                <div class="notes-list">
+                    <h4>Notes Originales</h4>
+                    ${notesHtml}
+                </div>
+
+                <div class="final-note">
+                    Note Finale: ${data.noteFinale}
+                </div>
+
+                <div class="calculation-details">
+                    <h4>Détails du Calcul</h4>
+                    <strong>Méthode:</strong> ${data.methodeCalcul}<br>
+                    <strong>Condition:</strong> ${data.conditionAppliquee}<br>
+                    <strong>Résolution:</strong> ${data.resolutionAppliquee}
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="error">Erreur: ${message}</div>`;
+            resultDiv.classList.add('show');
+        }
+    </script>
+</body>
+</html>
