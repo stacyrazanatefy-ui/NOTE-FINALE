@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Formulaire Demande</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #404040;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent-blue: #0066cc;
+            --accent-blue-hover: #0052a3;
+            --accent-orange: #ff8c00;
+            --accent-orange-hover: #e67e00;
+            --accent-red: #dc3545;
+            --accent-red-hover: #c82333;
+            --border-color: #404040;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background-color: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .navbar-brand, .nav-link {
+            color: var(--text-primary) !important;
+        }
+        
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .card-header {
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .form-label {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .form-control {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .form-control:focus {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+        }
+        
+        .form-control::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .form-select {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .form-select:focus {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+        }
+        
+        .btn-primary {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-blue-hover);
+            border-color: var(--accent-blue-hover);
+        }
+        
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--bg-dark);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .invalid-feedback {
+            color: #ff6b6b;
+        }
+        
+        .text-danger {
+            color: #ff6b6b !important;
+        }
+        
+        .alert {
+            border: none;
+        }
+        
+        .alert-danger {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+        
+        .alert-info {
+            background-color: rgba(0, 123, 255, 0.2);
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Forage</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/clients">Clients</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/demandes">Demandes</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0" th:text="${title}">Formulaire Demande</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Message d'information si pas de clients -->
+                        <div th:if="${clients.empty}" class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> 
+                            Aucun client n'est disponible. 
+                            <a href="/clients/new" class="btn btn-sm btn-primary ms-2">
+                                <i class="fas fa-plus"></i> Ajouter un client
+                            </a>
+                        </div>
+
+                        <!-- Formulaire -->
+                        <form th:action="${action}" th:object="${demande}" method="post" novalidate>
+                            <!-- Champ ID (caché pour la modification) -->
+                            <input type="hidden" th:field="*{id}" th:if="*{id != null}">
+                            
+                            <div class="row">
+                                <!-- Champ Date -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="date" class="form-label">Date de la demande *</label>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           id="date" 
+                                           th:field="*{date}" 
+                                           required>
+                                    <div th:if="${#fields.hasErrors('date')}" class="text-danger mt-1">
+                                        <small th:errors="*{date}"></small>
+                                    </div>
+                                </div>
+
+                                <!-- Champ Client -->
+                                <div class="col-md-8 mb-3">
+                                    <label for="client" class="form-label">Client *</label>
+                                    <select class="form-select" id="client" th:field="*{client.id}" required>
+                                        <option value="">Sélectionnez un client...</option>
+                                        <option th:each="client : ${clients}" 
+                                                th:value="${client.id}"
+                                                th:text="${client.nom + ' - ' + client.contact}"
+                                                th:selected="${demande.client != null and demande.client.id == client.id}">
+                                            Nom du client
+                                        </option>
+                                    </select>
+                                    <div th:if="${#fields.hasErrors('client')}" class="text-danger mt-1">
+                                        <small th:errors="*{client}"></small>
+                                    </div>
+                                    <div class="form-text text-secondary">
+                                        Si le client n'existe pas, <a href="/clients/new">créez-le d'abord</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- Champ Lieu -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="lieu" class="form-label">Lieu du forage *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="lieu" 
+                                           th:field="*{lieu}" 
+                                           placeholder="Ex: Village, quartier, etc."
+                                           required>
+                                    <div th:if="${#fields.hasErrors('lieu')}" class="text-danger mt-1">
+                                        <small th:errors="*{lieu}"></small>
+                                    </div>
+                                </div>
+
+                                <!-- Champ District -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="district" class="form-label">District *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="district" 
+                                           th:field="*{district}" 
+                                           placeholder="Ex: District, commune, etc."
+                                           required>
+                                    <div th:if="${#fields.hasErrors('district')}" class="text-danger mt-1">
+                                        <small th:errors="*{district}"></small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Boutons d'action -->
+                            <div class="d-flex justify-content-between">
+                                <a href="/demandes" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                                </a>
+                                <div>
+                                    <button type="reset" class="btn btn-outline-light me-2">
+                                        <i class="fas fa-undo"></i> Réinitialiser
+                                    </button>
+                                    <button type="submit" class="btn btn-primary" th:disabled="${clients.empty}">
+                                        <i class="fas fa-save"></i> 
+                                        <span th:if="*{id == null}">Ajouter</span>
+                                        <span th:if="*{id != null}">Mettre à jour</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-fontawesome-key.js" crossorigin="anonymous"></script>
+    
+    <!-- Validation JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const dateInput = document.getElementById('date');
+            const lieuInput = document.getElementById('lieu');
+            const districtInput = document.getElementById('district');
+            const clientSelect = document.getElementById('client');
+            
+            // Validation de la date
+            dateInput.addEventListener('input', function() {
+                const selectedDate = new Date(this.value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (this.value === '') {
+                    this.setCustomValidity('La date est obligatoire');
+                } else if (selectedDate > today) {
+                    this.setCustomValidity('La date ne peut pas être dans le futur');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // Validation du lieu
+            lieuInput.addEventListener('input', function() {
+                if (this.value.trim().length > 200) {
+                    this.setCustomValidity('Le lieu ne doit pas dépasser 200 caractères');
+                } else if (this.value.trim().length === 0) {
+                    this.setCustomValidity('Le lieu est obligatoire');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // Validation du district
+            districtInput.addEventListener('input', function() {
+                if (this.value.trim().length > 100) {
+                    this.setCustomValidity('Le district ne doit pas dépasser 100 caractères');
+                } else if (this.value.trim().length === 0) {
+                    this.setCustomValidity('Le district est obligatoire');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // Validation du client
+            clientSelect.addEventListener('change', function() {
+                if (this.value === '') {
+                    this.setCustomValidity('Le client est obligatoire');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // Validation avant soumission
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+        });
+    </script>
+</body>
+</html>
