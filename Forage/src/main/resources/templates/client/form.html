@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Formulaire Client</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #404040;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent-blue: #0066cc;
+            --accent-blue-hover: #0052a3;
+            --accent-orange: #ff8c00;
+            --accent-orange-hover: #e67e00;
+            --accent-red: #dc3545;
+            --accent-red-hover: #c82333;
+            --border-color: #404040;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background-color: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .navbar-brand, .nav-link {
+            color: var(--text-primary) !important;
+        }
+        
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .card-header {
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .form-label {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .form-control {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .form-control:focus {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+        }
+        
+        .form-control::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .btn-primary {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-blue-hover);
+            border-color: var(--accent-blue-hover);
+        }
+        
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--bg-dark);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .invalid-feedback {
+            color: #ff6b6b;
+        }
+        
+        .text-danger {
+            color: #ff6b6b !important;
+        }
+        
+        .alert {
+            border: none;
+        }
+        
+        .alert-danger {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Forage</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/clients">Clients</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0" th:text="${title}">Formulaire Client</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Formulaire -->
+                        <form th:action="${action}" th:object="${client}" method="post" novalidate>
+                            <!-- Champ ID (caché pour la modification) -->
+                            <input type="hidden" th:field="*{id}" th:if="*{id != null}">
+                            
+                            <!-- Champ Nom -->
+                            <div class="mb-3">
+                                <label for="nom" class="form-label">Nom du client *</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="nom" 
+                                       th:field="*{nom}" 
+                                       placeholder="Entrez le nom du client"
+                                       required>
+                                <div th:if="${#fields.hasErrors('nom')}" class="text-danger mt-1">
+                                    <small th:errors="*{nom}"></small>
+                                </div>
+                            </div>
+
+                            <!-- Champ Contact -->
+                            <div class="mb-3">
+                                <label for="contact" class="form-label">Contact *</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="contact" 
+                                       th:field="*{contact}" 
+                                       placeholder="Entrez le contact (téléphone, email...)"
+                                       required>
+                                <div th:if="${#fields.hasErrors('contact')}" class="text-danger mt-1">
+                                    <small th:errors="*{contact}"></small>
+                                </div>
+                                <div class="form-text text-secondary">
+                                    Ex: +242 06 123 456 78 ou email@example.com
+                                </div>
+                            </div>
+
+                            <!-- Boutons d'action -->
+                            <div class="d-flex justify-content-between">
+                                <a href="/clients" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                                </a>
+                                <div>
+                                    <button type="reset" class="btn btn-outline-light me-2">
+                                        <i class="fas fa-undo"></i> Réinitialiser
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> 
+                                        <span th:if="*{id == null}">Ajouter</span>
+                                        <span th:if="*{id != null}">Mettre à jour</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-fontawesome-key.js" crossorigin="anonymous"></script>
+    
+    <!-- Validation JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const nomInput = document.getElementById('nom');
+            const contactInput = document.getElementById('contact');
+            
+            // Validation du nom
+            nomInput.addEventListener('input', function() {
+                if (this.value.trim().length > 100) {
+                    this.setCustomValidity('Le nom ne doit pas dépasser 100 caractères');
+                } else if (this.value.trim().length === 0) {
+                    this.setCustomValidity('Le nom est obligatoire');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // Validation du contact
+            contactInput.addEventListener('input', function() {
+                if (this.value.trim().length > 20) {
+                    this.setCustomValidity('Le contact ne doit pas dépasser 20 caractères');
+                } else if (this.value.trim().length === 0) {
+                    this.setCustomValidity('Le contact est obligatoire');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // Validation avant soumission
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+        });
+    </script>
+</body>
+</html>

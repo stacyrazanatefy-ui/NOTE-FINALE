@@ -8,6 +8,9 @@ public class NoteDTO {
     private String candidatNom;
     private String matiereNom;
     private String correcteurNom;
+    private Long idcandidat;
+    private Long idmatiere;
+    private Long idcorrecteur;
 
     public NoteDTO() {}
 
@@ -25,4 +28,13 @@ public class NoteDTO {
 
     public String getCorrecteurNom() { return correcteurNom; }
     public void setCorrecteurNom(String correcteurNom) { this.correcteurNom = correcteurNom; }
+
+    public Long getIdcandidat() { return idcandidat; }
+    public void setIdcandidat(Long idcandidat) { this.idcandidat = idcandidat; }
+
+    public Long getIdmatiere() { return idmatiere; }
+    public void setIdmatiere(Long idmatiere) { this.idmatiere = idmatiere; }
+
+    public Long getIdcorrecteur() { return idcorrecteur; }
+    public void setIdcorrecteur(Long idcorrecteur) { this.idcorrecteur = idcorrecteur; }
 }

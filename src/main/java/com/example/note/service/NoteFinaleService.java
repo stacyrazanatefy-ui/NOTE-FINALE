@@ -80,32 +80,43 @@ public class NoteFinaleService {
             // Étape 3: Calcul de la différence totale
             double differenceTotale = calculerDifferenceTotale(valeursNotes);
             
-            // Étape 4: Recherche des paramètres
+            // Étape 4: Recherche des paramètres applicables
             List<Parametre> parametres = parametreRepository.findByMatiere(matiere);
+            List<Parametre> parametresApplicables = new java.util.ArrayList<>();
             
-            // Étape 5: Test des conditions (dans l'ordre)
+            // Filtrer les paramètres qui satisfont la condition
             for (Parametre parametre : parametres) {
                 String operateur = parametre.getOperateur().getOperateur();
                 double differenceParametre = parametre.getDiff().doubleValue();
-                String resolution = parametre.getResolution().getNom();
                 
                 boolean condition = evaluerCondition(differenceTotale, operateur, differenceParametre);
                 
                 if (condition) {
-                    BigDecimal resultat = appliquerResolution(valeursNotes, resolution);
-                    
-                    return new NoteFinaleResponse(
-                            candidatId, candidat.getNom(),
-                            matiereId, matiere.getNom(),
-                            valeursNotes, resultat,
-                            "Premier paramètre qui match", 
-                            String.format("%.2f %s %.2f = VRAI -> %s", differenceTotale, operateur, differenceParametre, resolution),
-                            resolution
-                    );
+                    parametresApplicables.add(parametre);
                 }
             }
             
-            // Étape 7: Cas par défaut - si aucune condition n'est remplie
+            // Étape 5: Choix du meilleur paramètre (le plus proche)
+            if (!parametresApplicables.isEmpty()) {
+                Parametre meilleurParametre = choisirMeilleurParametre(parametresApplicables, differenceTotale);
+                String resolution = meilleurParametre.getResolution().getNom();
+                BigDecimal resultat = appliquerResolution(valeursNotes, resolution);
+                
+                return new NoteFinaleResponse(
+                        candidatId, candidat.getNom(),
+                        matiereId, matiere.getNom(),
+                        valeursNotes, resultat,
+                        "Meilleur paramètre sélectionné", 
+                        String.format("Diff: %.2f, Seuil: %.2f, Distance: %.2f -> %s", 
+                            differenceTotale, 
+                            meilleurParametre.getDiff().doubleValue(),
+                            Math.abs(differenceTotale - meilleurParametre.getDiff().doubleValue()),
+                            resolution),
+                        resolution
+                );
+            }
+            
+            // Étape 6: Cas par défaut - si aucune condition n'est remplie
             double moyenne = valeursNotes.stream()
                     .mapToDouble(BigDecimal::doubleValue)
                     .average()
@@ -158,6 +169,27 @@ public class NoteFinaleService {
             default:
                 throw new IllegalArgumentException("Opérateur non reconnu: " + operateur);
         }
+    }
+    
+    private Parametre choisirMeilleurParametre(List<Parametre> parametresApplicables, double differenceTotale) {
+        Parametre meilleurParametre = null;
+        double distanceMinimale = Double.MAX_VALUE;
+        
+        for (Parametre parametre : parametresApplicables) {
+            double distance = Math.abs(differenceTotale - parametre.getDiff().doubleValue());
+            
+            if (distance < distanceMinimale) {
+                distanceMinimale = distance;
+                meilleurParametre = parametre;
+            } else if (distance == distanceMinimale && meilleurParametre != null) {
+                // En cas d'égalité, prendre le seuil le plus petit
+                if (parametre.getDiff().doubleValue() < meilleurParametre.getDiff().doubleValue()) {
+                    meilleurParametre = parametre;
+                }
+            }
+        }
+        
+        return meilleurParametre;
     }
     
     private BigDecimal appliquerResolution(List<BigDecimal> notes, String resolutionNom) {

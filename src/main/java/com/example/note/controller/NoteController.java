@@ -55,10 +55,20 @@ public class NoteController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Note> getNoteById(@PathVariable Long id) {
+    public ResponseEntity<NoteDTO> getNoteById(@PathVariable Long id) {
         Optional<Note> note = noteRepository.findById(id);
-        return note.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return note.map(n -> {
+            NoteDTO dto = new NoteDTO();
+            dto.setId(n.getId());
+            dto.setNote(n.getNote());
+            dto.setCandidatNom(n.getCandidat() != null ? n.getCandidat().getNom() : "N/A");
+            dto.setMatiereNom(n.getMatiere() != null ? n.getMatiere().getNom() : "N/A");
+            dto.setCorrecteurNom(n.getCorrecteur() != null ? n.getCorrecteur().getNom() : "N/A");
+            dto.setIdcandidat(n.getCandidat() != null ? n.getCandidat().getId() : null);
+            dto.setIdmatiere(n.getMatiere() != null ? n.getMatiere().getId() : null);
+            dto.setIdcorrecteur(n.getCorrecteur() != null ? n.getCorrecteur().getId() : null);
+            return ResponseEntity.ok(dto);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/candidat/{candidatId}")

@@ -53,10 +53,17 @@ public class ParametreController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Parametre> getParametreById(@PathVariable Long id) {
+    public ResponseEntity<ParametreDTO> getParametreById(@PathVariable Long id) {
         Optional<Parametre> parametre = parametreRepository.findById(id);
-        return parametre.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return parametre.map(p -> {
+            ParametreDTO dto = new ParametreDTO();
+            dto.setId(p.getId());
+            dto.setDiff(p.getDiff());
+            dto.setMatiereNom(p.getMatiere() != null ? p.getMatiere().getNom() : null);
+            dto.setOperateurSymbole(p.getOperateur() != null ? p.getOperateur().getOperateur() : null);
+            dto.setResolutionNom(p.getResolution() != null ? p.getResolution().getNom() : null);
+            return ResponseEntity.ok(dto);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{id}/edit")
