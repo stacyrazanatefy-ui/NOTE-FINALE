@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title}">Formulaire Client</title>
+    <title th:text="${title}">Formulaire Statut</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -18,6 +18,11 @@
             --text-muted: #6b7280;
             --accent-blue: #3b82f6;
             --accent-blue-dark: #2563eb;
+            --accent-orange: #f59e0b;
+            --accent-orange-dark: #d97706;
+            --accent-red: #ef4444;
+            --accent-red-dark: #dc2626;
+            --accent-green: #10b981;
             --border-color: #2a2e35;
             --error-red: #ef4444;
             --error-bg: rgba(239, 68, 68, 0.1);
@@ -52,11 +57,12 @@
             color: var(--accent-blue) !important;
         }
         
-        /* Card principale */
+        /* Cards */
         .card {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 8px;
+            overflow: hidden;
         }
         
         .card-header {
@@ -66,14 +72,21 @@
             padding: 1rem 1.5rem;
         }
         
-        .card-header h4 {
+        .card-header h4, .card-header h6 {
             font-weight: 600;
-            font-size: 1.25rem;
             margin: 0;
         }
         
+        .card-header h4 {
+            font-size: 1.25rem;
+        }
+        
+        .card-header h6 {
+            font-size: 1rem;
+        }
+        
         .card-body {
-            padding: 2rem;
+            padding: 1.5rem;
         }
         
         /* Labels */
@@ -91,8 +104,7 @@
             border-radius: 6px;
             color: var(--text-primary);
             font-size: 0.875rem;
-            padding: 0.625rem 0.75rem;
-            transition: all 0.2s ease;
+            padding: 0.5rem 0.75rem;
         }
         
         .form-control:focus {
@@ -107,29 +119,13 @@
             color: var(--text-muted);
         }
         
-        /* Texte d'aide */
-        .form-text {
-            color: var(--text-muted) !important;
-            font-size: 0.75rem;
-            margin-top: 0.25rem;
-        }
-        
-        /* Messages d'erreur */
-        .invalid-feedback, .text-danger {
-            color: var(--error-red) !important;
-            font-size: 0.75rem;
-            margin-top: 0.25rem;
-        }
-        
-        .text-danger small {
-            font-size: 0.75rem;
-        }
-        
         /* Alertes */
         .alert {
             border: none;
             border-radius: 6px;
             padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
         }
         
         .alert-danger {
@@ -142,9 +138,8 @@
         .btn {
             font-weight: 500;
             font-size: 0.875rem;
-            padding: 0.625rem 1.25rem;
+            padding: 0.5rem 1rem;
             border-radius: 6px;
-            transition: none;
         }
         
         .btn-primary {
@@ -170,22 +165,66 @@
             color: var(--text-primary);
         }
         
-        .btn-outline-light {
-            border: 1px solid var(--border-color);
-            background-color: transparent;
-            color: var(--text-secondary);
+        /* Badges */
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 500;
+            display: inline-block;
         }
         
-        .btn-outline-light:hover {
-            background-color: var(--bg-tertiary);
-            border-color: var(--border-color);
-            color: var(--text-primary);
+        .badge.bg-primary {
+            background-color: var(--accent-blue) !important;
+        }
+        
+        .badge.bg-danger {
+            background-color: var(--accent-red) !important;
+        }
+        
+        .badge.bg-success {
+            background-color: var(--accent-green) !important;
+        }
+        
+        /* Texte secondaire */
+        .text-secondary {
+            color: var(--text-secondary) !important;
+        }
+        
+        .small {
+            font-size: 0.75rem !important;
         }
         
         /* Layout */
         .container {
             padding-top: 2rem;
             padding-bottom: 2rem;
+        }
+        
+        /* Espacements */
+        .mb-3 {
+            margin-bottom: 1rem !important;
+        }
+        
+        .mt-1 {
+            margin-top: 0.25rem !important;
+        }
+        
+        .mt-2 {
+            margin-top: 0.5rem !important;
+        }
+        
+        .mt-3 {
+            margin-top: 1rem !important;
+        }
+        
+        /* Grid */
+        .d-grid {
+            display: grid;
+        }
+        
+        .gap-2 {
+            gap: 0.5rem;
         }
         
         /* Scrollbar personnalisée */
@@ -209,46 +248,33 @@
         
         /* Responsive */
         @media (max-width: 768px) {
+            .card-header {
+                padding: 0.875rem 1rem;
+            }
+            
             .card-body {
-                padding: 1.5rem;
+                padding: 1rem;
             }
             
-            .btn {
-                padding: 0.5rem 1rem;
-            }
-            
-            .d-flex {
+            .d-md-flex {
                 flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .d-flex > div {
-                display: flex;
-                justify-content: space-between;
                 gap: 0.5rem;
             }
             
-            .d-flex .btn-secondary {
-                margin-bottom: 0;
+            .btn {
+                width: 100%;
+            }
+            
+            .row .col-md-4 {
+                margin-bottom: 0.5rem;
             }
         }
         
-        /* Validation states */
-        .form-control:invalid:focus {
-            border-color: var(--error-red);
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-        }
-        
         /* Champ requis */
-        .form-label[for]::after {
+        .form-label[for="libelle"]::after {
             content: "*";
             color: var(--error-red);
             margin-left: 0.25rem;
-        }
-        
-        /* Désactiver l'astérisque pour les champs non requis */
-        .form-label:not([for])::after {
-            content: none;
         }
     </style>
 </head>
@@ -266,73 +292,87 @@
                         <a class="nav-link" href="/">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/clients">Clients</a>
+                        <a class="nav-link" href="/clients">Clients</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/demandes">Demandes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/statuts">Statuts</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container mt-4">
         <div class="row justify-content-center">
-            <div class="col-md-8">
+            <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h4 th:text="${title}">Formulaire Client</h4>
+                        <h4 class="mb-0" th:text="${title}">Formulaire Statut</h4>
                     </div>
                     <div class="card-body">
-                        <!-- Formulaire -->
-                        <form th:action="${action}" th:object="${client}" method="post" novalidate>
-                            <!-- Champ ID (caché pour la modification) -->
-                            <input type="hidden" th:field="*{id}" th:if="*{id != null}">
+                        <!-- Messages d'erreur -->
+                        <div th:if="${error}" class="alert alert-danger" role="alert">
+                            <span th:text="${error}"></span>
+                        </div>
+
+                        <form th:action="${action}" method="post" th:object="${statut}">
+                            <!-- Champ ID pour la modification -->
+                            <input type="hidden" th:if="*{id}" th:field="*{id}">
                             
-                            <!-- Champ Nom -->
-                            <div class="mb-4">
-                                <label for="nom" class="form-label">Nom du client</label>
+                            <!-- Libellé -->
+                            <div class="mb-3">
+                                <label for="libelle" class="form-label">Libellé du statut</label>
                                 <input type="text" 
                                        class="form-control" 
-                                       id="nom" 
-                                       th:field="*{nom}" 
-                                       placeholder="Entrez le nom du client"
+                                       id="libelle" 
+                                       th:field="*{libelle}"
+                                       placeholder="Ex: DEMANDE_CREEE"
+                                       maxlength="50"
                                        required>
-                                <div th:if="${#fields.hasErrors('nom')}" class="text-danger mt-1">
-                                    <small th:errors="*{nom}"></small>
+                                <div class="text-secondary small mt-1">
+                                    Le libellé doit être unique et ne pas dépasser 50 caractères.
+                                </div>
+                                <!-- Erreurs de validation -->
+                                <div th:if="${#fields.hasErrors('libelle')}" class="text-danger small mt-1">
+                                    <span th:errors="*{libelle}"></span>
                                 </div>
                             </div>
-
-                            <!-- Champ Contact -->
-                            <div class="mb-4">
-                                <label for="contact" class="form-label">Contact</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="contact" 
-                                       th:field="*{contact}" 
-                                       placeholder="Entrez le contact (téléphone, email...)"
-                                       required>
-                                <div th:if="${#fields.hasErrors('contact')}" class="text-danger mt-1">
-                                    <small th:errors="*{contact}"></small>
-                                </div>
-                                <div class="form-text">
-                                    Ex: +242 06 123 456 78 ou email@example.com
-                                </div>
-                            </div>
-
-                            <!-- Boutons d'action -->
-                            <div class="d-flex justify-content-between align-items-center">
-                                <a href="/clients" class="btn btn-secondary">
-                                    Retour à la liste
-                                </a>
-                                <div>
-                                    <button type="reset" class="btn btn-outline-light me-2">
-                                        Réinitialiser
-                                    </button>
-                                    <button type="submit" class="btn btn-primary">
-                                        <span th:if="*{id == null}">Ajouter</span>
-                                        <span th:if="*{id != null}">Mettre à jour</span>
-                                    </button>
-                                </div>
+                            
+                            <!-- Boutons -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/statuts" class="btn btn-secondary">Annuler</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <span th:if="*{id}">Mettre à jour</span>
+                                    <span th:unless="*{id}">Ajouter</span>
+                                </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+                
+                <!-- Informations supplémentaires -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Statuts par défaut</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-2 mb-md-0">
+                                <span class="badge bg-primary">DEMANDE_CREEE</span>
+                            </div>
+                            <div class="col-md-4 mb-2 mb-md-0">
+                                <span class="badge bg-danger">DEMANDE_ANNULEE</span>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="badge bg-success">DEMANDE_TERMINEE</span>
+                            </div>
+                        </div>
+                        <div class="text-secondary small mt-2">
+                            Ces statuts sont créés automatiquement au démarrage de l'application.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -340,45 +380,5 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Validation JavaScript -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            const nomInput = document.getElementById('nom');
-            const contactInput = document.getElementById('contact');
-            
-            // Validation du nom
-            nomInput.addEventListener('input', function() {
-                if (this.value.trim().length > 100) {
-                    this.setCustomValidity('Le nom ne doit pas dépasser 100 caractères');
-                } else if (this.value.trim().length === 0) {
-                    this.setCustomValidity('Le nom est obligatoire');
-                } else {
-                    this.setCustomValidity('');
-                }
-            });
-            
-            // Validation du contact
-            contactInput.addEventListener('input', function() {
-                if (this.value.trim().length > 20) {
-                    this.setCustomValidity('Le contact ne doit pas dépasser 20 caractères');
-                } else if (this.value.trim().length === 0) {
-                    this.setCustomValidity('Le contact est obligatoire');
-                } else {
-                    this.setCustomValidity('');
-                }
-            });
-            
-            // Validation avant soumission
-            form.addEventListener('submit', function(event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            });
-        });
-    </script>
 </body>
 </html>

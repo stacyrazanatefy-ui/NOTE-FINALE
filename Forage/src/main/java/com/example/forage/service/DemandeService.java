@@ -1,6 +1,7 @@
 package com.example.forage.service;
 
 import com.example.forage.model.Demande;
+import com.example.forage.model.DemandeStatut;
 import com.example.forage.repository.DemandeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,11 +18,17 @@ public class DemandeService {
     @Autowired
     private DemandeRepository demandeRepository;
     
+    @Autowired
+    private DemandeStatutService demandeStatutService;
+    
     /**
-     * Sauvegarde une demande
+     * Sauvegarde une demande avec ajout automatique du statut initial
      */
     public Demande saveDemande(Demande demande) {
-        return demandeRepository.save(demande);
+        Demande savedDemande = demandeRepository.save(demande);
+        // Ajouter automatiquement le statut "DEMANDE_CREEE"
+        demandeStatutService.addStatutInitial(savedDemande);
+        return savedDemande;
     }
     
     /**
@@ -97,10 +104,14 @@ public class DemandeService {
     }
     
     /**
-     * Supprime une demande par son ID
+     * Supprime une demande par son ID et son historique de statuts
      */
+    @Transactional
     public boolean deleteDemande(Long id) {
         if (demandeRepository.existsById(id)) {
+            // Supprimer d'abord l'historique des statuts
+            demandeStatutService.deleteStatutsByDemandeId(id);
+            // Puis supprimer la demande
             demandeRepository.deleteById(id);
             return true;
         }
@@ -119,5 +130,26 @@ public class DemandeService {
      */
     public long countDemandes() {
         return demandeRepository.countDemandes();
+    }
+    
+    /**
+     * Récupère l'historique des statuts d'une demande
+     */
+    public List<DemandeStatut> getHistoriqueStatuts(Long demandeId) {
+        return demandeStatutService.getHistoriqueStatutsByDemandeId(demandeId);
+    }
+    
+    /**
+     * Récupère le dernier statut d'une demande
+     */
+    public Optional<DemandeStatut> getLastStatut(Long demandeId) {
+        return demandeStatutService.getLastStatutByDemandeId(demandeId);
+    }
+    
+    /**
+     * Change le statut d'une demande
+     */
+    public DemandeStatut changerStatutDemande(Long demandeId, String nouveauStatut) {
+        return demandeStatutService.changerStatutDemande(demandeId, nouveauStatut);
     }
 }
