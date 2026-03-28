@@ -2,8 +2,11 @@ package com.example.forage.controller;
 
 import com.example.forage.model.Client;
 import com.example.forage.model.Demande;
+import com.example.forage.model.DemandeStatut;
+import com.example.forage.model.Statut;
 import com.example.forage.service.ClientService;
 import com.example.forage.service.DemandeService;
+import com.example.forage.service.StatutService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -27,13 +30,25 @@ public class DemandeController {
     @Autowired
     private ClientService clientService;
     
+    @Autowired
+    private StatutService statutService;
+    
     /**
-     * Affiche la liste de toutes les demandes
+     * Affiche la liste de toutes les demandes avec leur dernier statut
      */
     @GetMapping
     public String listDemandes(Model model) {
         List<Demande> demandes = demandeService.getAllDemandesWithClient();
+        
+        // Créer une map pour stocker les derniers statuts
+        java.util.Map<Long, DemandeStatut> lastStatuts = new java.util.HashMap<>();
+        for (Demande demande : demandes) {
+            Optional<DemandeStatut> lastStatut = demandeService.getLastStatut(demande.getId());
+            lastStatut.ifPresent(demandeStatut -> lastStatuts.put(demande.getId(), demandeStatut));
+        }
+        
         model.addAttribute("demandes", demandes);
+        model.addAttribute("lastStatuts", lastStatuts);
         model.addAttribute("title", "Liste des Demandes");
         return "demande/list";
     }
@@ -47,16 +62,18 @@ public class DemandeController {
         demande.setDate(LocalDate.now());
         
         List<Client> clients = clientService.getAllClients();
+        List<Statut> statuts = statutService.getAllStatuts();
         
         model.addAttribute("demande", demande);
         model.addAttribute("clients", clients);
+        model.addAttribute("statuts", statuts);
         model.addAttribute("title", "Ajouter une Demande");
         model.addAttribute("action", "/demandes/save");
         return "demande/form";
     }
     
     /**
-     * Sauvegarde une nouvelle demande
+     * Sauvegarde une nouvelle demande avec statut initial automatique
      */
     @PostMapping("/save")
     public String saveDemande(@Valid @ModelAttribute("demande") Demande demande, 
@@ -65,12 +82,18 @@ public class DemandeController {
                             RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             List<Client> clients = clientService.getAllClients();
+            List<Statut> statuts = statutService.getAllStatuts();
             model.addAttribute("clients", clients);
+            model.addAttribute("statuts", statuts);
             return "demande/form";
         }
         
-        demandeService.saveDemande(demande);
-        redirectAttributes.addFlashAttribute("success", "Demande ajoutée avec succès");
+        try {
+            demandeService.saveDemande(demande); // Le statut "DEMANDE_CREEE" est ajouté automatiquement
+            redirectAttributes.addFlashAttribute("success", "Demande ajoutée avec succès");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de l'ajout de la demande: " + e.getMessage());
+        }
         return "redirect:/demandes";
     }
     
@@ -79,11 +102,14 @@ public class DemandeController {
      */
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        Optional<Demande> demande = demandeService.getDemandeById(id);
-        if (demande.isPresent()) {
+        Optional<Demande> demandeOpt = demandeService.getDemandeById(id);
+        if (demandeOpt.isPresent()) {
             List<Client> clients = clientService.getAllClients();
-            model.addAttribute("demande", demande.get());
+            List<Statut> statuts = statutService.getAllStatuts();
+            
+            model.addAttribute("demande", demandeOpt.get());
             model.addAttribute("clients", clients);
+            model.addAttribute("statuts", statuts);
             model.addAttribute("title", "Modifier une Demande");
             model.addAttribute("action", "/demandes/update");
             return "demande/form";
@@ -103,31 +129,75 @@ public class DemandeController {
                                RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             List<Client> clients = clientService.getAllClients();
+            List<Statut> statuts = statutService.getAllStatuts();
             model.addAttribute("clients", clients);
+            model.addAttribute("statuts", statuts);
             return "demande/form";
         }
         
-        Demande updatedDemande = demandeService.updateDemande(demande.getId(), demande);
-        if (updatedDemande != null) {
-            redirectAttributes.addFlashAttribute("success", "Demande modifiée avec succès");
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Demande non trouvée");
+        try {
+            Demande updatedDemande = demandeService.updateDemande(demande.getId(), demande);
+            if (updatedDemande != null) {
+                redirectAttributes.addFlashAttribute("success", "Demande modifiée avec succès");
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Demande non trouvée");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de la modification de la demande: " + e.getMessage());
         }
         return "redirect:/demandes";
     }
     
     /**
-     * Supprime une demande
+     * Supprime une demande et son historique de statuts
      */
     @GetMapping("/delete/{id}")
     public String deleteDemande(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        boolean deleted = demandeService.deleteDemande(id);
-        if (deleted) {
-            redirectAttributes.addFlashAttribute("success", "Demande supprimée avec succès");
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Demande non trouvée");
+        try {
+            boolean deleted = demandeService.deleteDemande(id);
+            if (deleted) {
+                redirectAttributes.addFlashAttribute("success", "Demande supprimée avec succès");
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Demande non trouvée");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de la suppression de la demande: " + e.getMessage());
         }
         return "redirect:/demandes";
+    }
+    
+    /**
+     * Affiche l'historique des statuts d'une demande
+     */
+    @GetMapping("/historique/{id}")
+    public String showHistorique(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        Optional<Demande> demandeOpt = demandeService.getDemandeById(id);
+        if (demandeOpt.isPresent()) {
+            List<DemandeStatut> historique = demandeService.getHistoriqueStatuts(id);
+            model.addAttribute("demande", demandeOpt.get());
+            model.addAttribute("historique", historique);
+            model.addAttribute("title", "Historique des statuts - Demande #" + id);
+            return "demande/historique";
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Demande non trouvée");
+            return "redirect:/demandes";
+        }
+    }
+    
+    /**
+     * Change le statut d'une demande
+     */
+    @PostMapping("/changer-statut")
+    public String changerStatut(@RequestParam Long demandeId, 
+                               @RequestParam String nouveauStatut,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            demandeService.changerStatutDemande(demandeId, nouveauStatut);
+            redirectAttributes.addFlashAttribute("success", "Statut changé avec succès");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors du changement de statut: " + e.getMessage());
+        }
+        return "redirect:/demandes/historique/" + demandeId;
     }
     
     /**

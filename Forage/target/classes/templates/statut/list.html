@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title}">Liste des Clients</title>
+    <title th:text="${title}">Liste des Statuts</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -25,10 +25,13 @@
             /* Version "warning" en bleu doux (remplace orange) */
             --action-warning: #3b82f6;
             --action-warning-dark: #2563eb;
-            /* Version "danger" en bleu soutenu mais avec une nuance légèrement plus pourpre pour le contraste (mais toujours bleuté) */
+            /* Version "danger" en bleu profond (remplace rouge) */
             --action-danger: #4f6ef5;
             --action-danger-dark: #3b5bdb;
-            /* success reste vert mais atténué pour s'harmoniser */
+            /* Version "success" en bleu turquoise harmonisé */
+            --action-success: #2dd4bf;
+            --action-success-dark: #14b8a6;
+            /* Alertes */
             --success-green: #2dd4bf;
             --success-bg: rgba(45, 212, 191, 0.1);
             --error-red: #f87171;
@@ -70,11 +73,12 @@
             border-radius: 8px;
         }
         
-        /* Card principale */
+        /* Cards */
         .card {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 8px;
+            overflow: hidden;
         }
         
         .card-header {
@@ -102,25 +106,34 @@
         
         .table th {
             background-color: var(--bg-tertiary);
-            border-color: var(--border-color);
-            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-secondary);
             font-weight: 600;
-            font-size: 0.875rem;
-            padding: 0.75rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.75rem 1rem;
+            border-top: none;
         }
         
         .table td {
-            border-color: var(--border-color);
-            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
             vertical-align: middle;
+            font-size: 0.875rem;
+        }
+        
+        .table tr:last-child td {
+            border-bottom: none;
         }
         
         .table-striped > tbody > tr:nth-of-type(odd) {
-            background-color: rgba(26, 29, 33, 0.5);
+            background-color: rgba(26, 29, 33, 0.3);
         }
         
         .table-hover > tbody > tr:hover {
             background-color: var(--bg-tertiary);
+            transition: background-color 0.2s ease;
         }
         
         /* Boutons - palette unifiée bleue */
@@ -145,7 +158,7 @@
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
         
-        /* Bouton "Modifier" - remplacement de l'orange par un bleu secondaire élégant */
+        /* Bouton "Modifier" - remplacement de l'orange par bleu */
         .btn-warning {
             background-color: var(--action-warning);
             border-color: var(--action-warning);
@@ -159,7 +172,7 @@
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
         
-        /* Bouton "Supprimer" - rouge remplacé par un bleu profond avec une touche subtile */
+        /* Bouton "Supprimer" - remplacement du rouge par bleu profond */
         .btn-danger {
             background-color: var(--action-danger);
             border-color: var(--action-danger);
@@ -173,70 +186,28 @@
             box-shadow: 0 4px 12px rgba(79, 110, 245, 0.3);
         }
         
-        .btn-outline-light {
-            border: 1px solid var(--border-color);
-            background-color: transparent;
-            color: var(--text-secondary);
-        }
-        
-        .btn-outline-light:hover {
-            background-color: var(--bg-tertiary);
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
-        }
-        
         .btn-sm {
             padding: 0.375rem 0.75rem;
             font-size: 0.75rem;
         }
         
-        /* Boutons dans le groupe */
-        .btn-group .btn {
-            margin: 0 2px;
-            border-radius: 6px;
-        }
-        
-        /* Formulaire de recherche */
-        .form-control {
-            background-color: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-primary);
-            font-size: 0.875rem;
-            padding: 0.5rem 0.75rem;
-        }
-        
-        .form-control:focus {
-            background-color: var(--bg-tertiary);
-            border-color: var(--accent-blue);
-            color: var(--text-primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-            outline: none;
-        }
-        
-        .form-control::placeholder {
-            color: var(--text-muted);
-        }
-        
-        .input-group {
+        /* Groupe de boutons */
+        .btn-group {
             gap: 0.5rem;
         }
         
-        .input-group .form-control {
-            flex: 1;
-        }
-        
-        .input-group .btn {
-            white-space: nowrap;
+        .btn-group .btn {
+            margin: 0;
+            border-radius: 6px;
         }
         
         /* Alertes */
         .alert {
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-            backdrop-filter: blur(2px);
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
         }
         
         .alert-success {
@@ -254,24 +225,36 @@
         .alert-dismissible .btn-close {
             filter: brightness(0) invert(1);
             opacity: 0.5;
+            padding: 1rem;
         }
         
         .alert-dismissible .btn-close:hover {
             opacity: 1;
         }
         
-        /* Badge - uniquement bleu cohérent */
+        /* Badges - palette bleue cohérente */
         .badge {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             padding: 0.35rem 0.75rem;
             border-radius: 20px;
             font-weight: 500;
+            letter-spacing: 0.3px;
+            display: inline-block;
         }
         
         .badge.bg-primary {
             background-color: var(--accent-blue) !important;
             color: white;
-            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
+        }
+        
+        .badge.bg-danger {
+            background-color: var(--action-danger) !important;
+            color: white;
+        }
+        
+        .badge.bg-success {
+            background-color: var(--action-success) !important;
+            color: #0a0c10;
         }
         
         /* Texte secondaire */
@@ -286,12 +269,19 @@
         
         .card-title {
             color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
-            letter-spacing: 0.3px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
         }
         
-        /* scrollbar personnalisée */
+        /* Layout */
+        .container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        
+        /* Scrollbar personnalisée */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -314,7 +304,7 @@
         @media (max-width: 768px) {
             .card-header {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 0.75rem;
                 align-items: stretch !important;
             }
             
@@ -323,27 +313,16 @@
             }
             
             .btn-group {
-                display: flex;
+                flex-direction: column;
                 gap: 0.5rem;
-                flex-wrap: wrap;
             }
             
             .btn-group .btn {
-                flex: 1;
-                margin: 0;
-            }
-            
-            .input-group {
-                flex-direction: column;
-            }
-            
-            .input-group .form-control,
-            .input-group .btn {
                 width: 100%;
             }
             
             .table {
-                font-size: 0.875rem;
+                font-size: 0.75rem;
             }
             
             .table th,
@@ -352,34 +331,29 @@
             }
         }
         
-        /* Légères animations pour raffinement */
-        .btn {
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        /* État vide */
+        .text-center.text-secondary {
+            padding: 2rem;
         }
         
-        .card {
-            transition: transform 0.2s, box-shadow 0.2s;
+        /* Animation subtile pour les cartes */
+        .stats-card {
+            transition: transform 0.2s ease;
         }
         
-        .card:hover {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        .stats-card:hover {
+            transform: translateY(-2px);
         }
         
-        /* Style des liens d'action */
-        a:not(.btn) {
-            color: var(--accent-blue);
-            text-decoration: none;
+        /* Effet de focus amélioré */
+        .btn:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+            outline: none;
         }
         
-        a:not(.btn):hover {
-            color: var(--accent-blue-dark);
-            text-decoration: underline;
-        }
-        
-        /* amélioration du badge statistique */
-        .stat-badge {
-            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
-            padding: 0.4rem 1rem;
+        /* Style pour le badge dans le tableau */
+        .badge-statut {
+            display: inline-block;
             font-weight: 600;
         }
     </style>
@@ -398,10 +372,13 @@
                         <a class="nav-link" href="/">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/clients">Clients</a>
+                        <a class="nav-link" href="/clients">Clients</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/demandes">Demandes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/statuts">Statuts</a>
                     </li>
                 </ul>
             </div>
@@ -423,60 +400,48 @@
         <!-- Card principale -->
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0" th:text="${title}">Liste des Clients</h4>
+                <h4 class="mb-0" th:text="${title}">Liste des Statuts</h4>
                 <div>
-                    <a href="/clients/new" class="btn btn-primary">
-                        Ajouter un Client
+                    <a href="/statuts/new" class="btn btn-primary">
+                        Ajouter un Statut
                     </a>
                 </div>
             </div>
             <div class="card-body">
-                <!-- Barre de recherche -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <form method="get" action="/clients/search">
-                            <div class="input-group">
-                                <input type="text" name="nom" class="form-control" 
-                                       placeholder="Rechercher par nom..." 
-                                       th:value="${searchTerm}">
-                                <button class="btn btn-outline-light" type="submit">
-                                    Rechercher
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Tableau des clients -->
+                <!-- Tableau des statuts -->
                 <div class="table-responsive">
                     <table class="table table-striped table-hover">
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Nom</th>
-                                <th>Contact</th>
+                                <th>Libellé</th>
                                 <th>Actions</th>
-                            </tr>
-                        </thead>
+                            </thead>
                         <tbody>
-                            <tr th:if="${clients.empty}">
-                                <td colspan="4" class="text-center text-secondary py-4">
-                                    Aucun client trouvé
+                            <tr th:if="${statuts.empty}">
+                                <td colspan="3" class="text-center text-secondary">
+                                    Aucun statut trouvé
+                                 </td>
+                             </tr>
+                            <tr th:each="statut : ${statuts}">
+                                <td th:text="${statut.id}">1</td>
+                                <td>
+                                    <span class="badge badge-statut" 
+                                          th:classappend="${#strings.contains(statut.libelle, 'CREEE') ? 'bg-primary' : 
+                                                         #strings.contains(statut.libelle, 'ANNULEE') ? 'bg-danger' : 'bg-success'}"
+                                          th:text="${statut.libelle}">
+                                        Statut
+                                    </span>
                                 </td>
-                            </tr>
-                            <tr th:each="client : ${clients}">
-                                <td th:text="${client.id}">1</td>
-                                <td th:text="${client.nom}">Nom du client</td>
-                                <td th:text="${client.contact}">Contact</td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a th:href="@{/clients/edit/{id}(id=${client.id})}" 
+                                        <a th:href="@{/statuts/edit/{id}(id=${statut.id})}" 
                                            class="btn btn-warning btn-sm">
                                             Modifier
                                         </a>
-                                        <a th:href="@{/clients/delete/{id}(id=${client.id})}" 
+                                        <a th:href="@{/statuts/delete/{id}(id=${statut.id})}" 
                                            class="btn btn-danger btn-sm"
-                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce client ?')">
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce statut ?')">
                                             Supprimer
                                         </a>
                                     </div>
@@ -486,21 +451,23 @@
                     </table>
                 </div>
 
-                <!-- Statistiques avec design cohérent -->
+                <!-- Statistiques -->
                 <div class="row mt-4">
                     <div class="col-md-12">
-                        <div class="card bg-dark" style="border: 1px solid var(--border-color);">
-                            <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
-                                <div>
-                                    <h6 class="card-title text-secondary mb-1">Vue d'ensemble</h6>
-                                    <p class="mb-0 fs-5 fw-semibold">
-                                        <span class="badge stat-badge" style="background: var(--accent-blue); font-size: 0.9rem;" th:text="${#lists.size(clients)} + ' client(s)'">0 client(s)</span>
-                                    </p>
-                                </div>
-                                <div class="mt-2 mt-sm-0">
-                                    <small class="text-secondary">
-                                        Dernière mise à jour: aujourd'hui
-                                    </small>
+                        <div class="card bg-dark stats-card">
+                            <div class="card-body">
+                                <h6 class="card-title">Vue d'ensemble</h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p class="mb-0">
+                                            <span class="badge bg-primary" th:text="${#lists.size(statuts)} + ' statut(s)'">0 statut(s)</span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-8 text-md-end mt-2 mt-md-0">
+                                        <small class="text-secondary">
+                                            Dernière mise à jour: aujourd'hui
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -511,9 +478,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Script pour fermeture des alertes en douceur -->
     <script>
-        // Améliore la fermeture des alertes avec animation
+        // Fermeture douce des alertes
         document.addEventListener('DOMContentLoaded', function() {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
