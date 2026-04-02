@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Détails du Devis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --bg-dark: #0a0c10;
+            --bg-secondary: #111315;
+            --bg-tertiary: #1a1d21;
+            --bg-card: #1e2127;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-blue: #3b82f6;
+            --accent-blue-dark: #2563eb;
+            --accent-orange: #f59e0b;
+            --accent-orange-dark: #d97706;
+            --accent-red: #ef4444;
+            --accent-red-dark: #dc2626;
+            --accent-green: #10b981;
+            --border-color: #2a2e35;
+            --success-green: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --error-red: #f87171;
+            --error-bg: rgba(248, 113, 113, 0.1);
+            --info-blue: #3b82f6;
+            --info-bg: rgba(59, 130, 246, 0.1);
+        }
+        
+        body {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .navbar {
+            background: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue) !important;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .nav-link:hover {
+            color: var(--accent-blue) !important;
+        }
+        
+        .nav-link.active {
+            color: var(--accent-blue) !important;
+            background-color: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+        }
+        
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .card-header h4, .card-header h5 {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .card-header h4 {
+            font-size: 1.25rem;
+        }
+        
+        .card-header h5 {
+            font-size: 1rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .info-section {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .info-section h6 {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .table {
+            color: var(--text-primary);
+            margin-bottom: 0;
+        }
+        
+        .table th {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .table td {
+            border-color: var(--border-color);
+            vertical-align: middle;
+        }
+        
+        .total-row {
+            background-color: var(--bg-tertiary);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .total-row td {
+            padding: 1rem;
+            border-top: 2px solid var(--accent-blue);
+        }
+        
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .badge.bg-primary {
+            background-color: var(--accent-blue) !important;
+        }
+        
+        .badge.bg-success {
+            background-color: var(--accent-green) !important;
+        }
+        
+        .badge.bg-warning {
+            background-color: var(--accent-orange) !important;
+        }
+        
+        .badge.bg-danger {
+            background-color: var(--accent-red) !important;
+        }
+        
+        .btn {
+            font-weight: 500;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-blue-dark);
+            border-color: var(--accent-blue-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--bg-dark);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .btn-success {
+            background-color: var(--accent-green);
+            border-color: var(--accent-green);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--accent-red);
+            border-color: var(--accent-red);
+            color: white;
+        }
+        
+        .form-select {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .form-select:focus {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .alert-success {
+            background-color: var(--success-bg);
+            color: var(--success-green);
+            border-left: 3px solid var(--success-green);
+        }
+        
+        .alert-danger {
+            background-color: var(--error-bg);
+            color: var(--error-red);
+            border-left: 3px solid var(--error-red);
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue-dark);
+        }
+        
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .table {
+                font-size: 0.75rem;
+            }
+            
+            .table th,
+            .table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Forage</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/clients">Clients</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/demandes">Demandes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/statuts">Statuts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/devis">Devis</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Informations du devis -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 th:text="'Devis #' + ${devis.id}">Devis #1</h4>
+                <div>
+                    <a href="/devis" class="btn btn-secondary">
+                        Retour à la liste
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="info-section">
+                            <h6>Informations générales</h6>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Type de devis:</span>
+                                    <span class="info-value">
+                                        <span class="badge" 
+                                              th:classappend="${devis.typeDevis == 'Etude' ? 'bg-info' : 'bg-warning'}"
+                                              th:text="${devis.typeDevis}">
+                                            Type
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Statut:</span>
+                                    <span class="info-value">
+                                        <span class="badge" 
+                                              th:classappend="${devis.statut.name() == 'CREE' ? 'bg-primary' : 
+                                                             devis.statut.name() == 'ACCEPTE' ? 'bg-success' : 'bg-danger'}"
+                                              th:text="${devis.statut.libelle}">
+                                            Statut
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Date de création:</span>
+                                    <span class="info-value" th:text="${#temporals.format(devis.dateCreation, 'dd/MM/yyyy à HH:mm')}">
+                                        Date
+                                    </span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Montant total:</span>
+                                    <span class="info-value fw-bold text-primary" 
+                                          th:text="${#numbers.formatDecimal(devis.montantTotal, 0, 'COMMA', 2, 'POINT')} + ' Ar'">
+                                        Total
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-section">
+                            <h6>Changer le statut</h6>
+                            <form method="post" th:action="@{/devis/update-statut}">
+                                <input type="hidden" name="devisId" th:value="${devis.id}">
+                                <select name="nouveauStatut" class="form-select" required>
+                                    <option value="">-- Choisir --</option>
+                                    <option value="CREE" th:selected="${devis.statut.name() == 'CREE'}">Créé</option>
+                                    <option value="ACCEPTE" th:selected="${devis.statut.name() == 'ACCEPTE'}">Accepté</option>
+                                    <option value="REFUSE" th:selected="${devis.statut.name() == 'REFUSE'}">Refusé</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm mt-2 w-100">
+                                    Mettre à jour
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations de la demande associée -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Demande associée</h5>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">ID Demande:</span>
+                        <span class="info-value">
+                            <a th:href="@{/demandes/{id}(id=${devis.demande.id})}" 
+                               class="text-decoration-none"
+                               th:text="'#' + ${devis.demande.id}">
+                                #1
+                            </a>
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Date:</span>
+                        <span class="info-value" th:text="${#temporals.format(devis.demande.date, 'dd/MM/yyyy')}">
+                            Date
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Lieu:</span>
+                        <span class="info-value" th:text="${devis.demande.lieu}">Lieu</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">District:</span>
+                        <span class="info-value" th:text="${devis.demande.district}">District</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Client:</span>
+                        <span class="info-value">
+                            <span th:if="${devis.demande.client}" th:text="${devis.demande.client.nom}">Client</span>
+                            <span th:unless="${devis.demande.client}" class="text-muted">Non défini</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Détails du devis -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Détails du devis</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%">#</th>
+                                <th style="width: 45%">Libellé</th>
+                                <th style="width: 15%">Prix unitaire</th>
+                                <th style="width: 10%">Quantité</th>
+                                <th style="width: 20%">Montant</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="detail, stat : ${devis.details}">
+                                <td th:text="${stat.index + 1}">1</td>
+                                <td th:text="${detail.libelle}">Libellé</td>
+                                <td th:text="${#numbers.formatDecimal(detail.prixUnitaire, 0, 'COMMA', 2, 'POINT')} + ' Ar'">0.00 Ar</td>
+                                <td th:text="${detail.quantite}">1</td>
+                                <td class="fw-semibold" th:text="${#numbers.formatDecimal(detail.montant, 0, 'COMMA', 2, 'POINT')} + ' Ar'">0.00 Ar</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td colspan="4" class="text-end">Total:</td>
+                                <td class="fw-bold" th:text="${#numbers.formatDecimal(devis.montantTotal, 0, 'COMMA', 2, 'POINT')} + ' Ar'">
+                                    0.00 Ar
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fermeture douce des alertes
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const closeBtn = alert.querySelector('.btn-close');
+                if(closeBtn) {
+                    closeBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        alert.style.transition = 'opacity 0.2s ease';
+                        alert.style.opacity = '0';
+                        setTimeout(() => {
+                            alert.remove();
+                        }, 200);
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
