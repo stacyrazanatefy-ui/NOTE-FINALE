@@ -1,8 +1,16 @@
 com\example\forage\model\DemandeStatut.class
+com\example\forage\controller\DevisController.class
+com\example\forage\model\Devis.class
 com\example\forage\model\Statut.class
 com\example\forage\config\DataInitializer.class
+com\example\forage\repository\DevisDetailsRepository.class
 com\example\forage\controller\StatutController.class
+com\example\forage\model\DevisDetails.class
 com\example\forage\repository\StatutRepository.class
+com\example\forage\service\DevisService.class
+com\example\forage\service\DevisService$DevisStatistics.class
+com\example\forage\model\Devis$StatutDevis.class
+com\example\forage\repository\DevisRepository.class
 com\example\forage\repository\DemandeStatutRepository.class
 com\example\forage\service\DemandeStatutService.class
 com\example\forage\service\StatutService.class
