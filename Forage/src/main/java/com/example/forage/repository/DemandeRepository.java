@@ -54,4 +54,42 @@ public interface DemandeRepository extends JpaRepository<Demande, Long> {
      */
     @Query("SELECT COUNT(d) FROM Demande d")
     long countDemandes();
+    
+    /**
+     * Recherche des demandes par terme générique
+     */
+    @Query("SELECT d FROM Demande d LEFT JOIN FETCH d.client c WHERE " +
+           "LOWER(d.lieu) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(d.district) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(c.nom) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(c.contact) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    List<Demande> searchDemandes(@Param("searchTerm") String searchTerm);
+    
+    /**
+     * Récupère les demandes par statut
+     */
+    @Query("SELECT DISTINCT d FROM Demande d " +
+           "JOIN d.demandeStatuts ds " +
+           "JOIN ds.statut s " +
+           "WHERE s.libelle = :statutLibelle " +
+           "AND ds.date = (SELECT MAX(ds2.date) FROM DemandeStatut ds2 WHERE ds2.demande.id = d.id)")
+    List<Demande> findByStatutLibelle(@Param("statutLibelle") String statutLibelle);
+    
+    /**
+     * Récupère les demandes avant une date
+     */
+    @Query("SELECT d FROM Demande d WHERE d.date <= :endDate ORDER BY d.date DESC")
+    List<Demande> findByDateBefore(@Param("endDate") LocalDate endDate);
+    
+    /**
+     * Récupère tous les lieux uniques
+     */
+    @Query("SELECT DISTINCT d.lieu FROM Demande d ORDER BY d.lieu")
+    List<String> findAllDistinctLieux();
+    
+    /**
+     * Récupère tous les districts uniques
+     */
+    @Query("SELECT DISTINCT d.district FROM Demande d ORDER BY d.district")
+    List<String> findAllDistinctDistricts();
 }

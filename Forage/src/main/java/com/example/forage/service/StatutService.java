@@ -46,7 +46,19 @@ public class StatutService {
      * Supprimer un statut par son ID
      */
     public void deleteStatut(Long id) {
+        // Vérifier si le statut est utilisé dans des demandes
+        if (isStatutUsedInDemandes(id)) {
+            throw new RuntimeException("Impossible de supprimer ce statut car il est utilisé dans des demandes. " +
+                                      "Vous devez d'abord supprimer ou modifier les demandes qui utilisent ce statut.");
+        }
         statutRepository.deleteById(id);
+    }
+    
+    /**
+     * Vérifier si un statut est utilisé dans des demandes
+     */
+    public boolean isStatutUsedInDemandes(Long statutId) {
+        return statutRepository.isStatutUsedInDemandes(statutId);
     }
     
     /**
@@ -63,6 +75,7 @@ public class StatutService {
         if (statutRepository.count() == 0) {
             createDefaultStatut("DEMANDE_CREEE");
             createDefaultStatut("DEMANDE_ANNULEE");
+            createDefaultStatut("DEMANDE_CONFIRMEE");
             createDefaultStatut("DEMANDE_TERMINEE");
         }
     }

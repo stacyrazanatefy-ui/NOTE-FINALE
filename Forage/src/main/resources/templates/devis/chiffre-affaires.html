@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Chiffre d'Affaires</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+            --text-primary: #ffffff;
+            --text-secondary: #a8a8a8;
+            --text-muted: #6c757d;
+            --accent-blue: #3b82f6;
+            --accent-blue-dark: #2563eb;
+            --border-color: #374151;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue) !important;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .nav-link:hover {
+            color: var(--accent-blue) !important;
+        }
+        
+        .nav-link.active {
+            color: var(--accent-blue) !important;
+            background-color: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+        }
+
+        .container {
+            max-width: 800px;
+            padding: 2rem 1rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .ca-card {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .ca-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 2rem;
+        }
+
+        .ca-amount {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .ca-currency {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .ca-card-secondary {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .ca-card-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.15);
+        }
+
+        .ca-title-secondary {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .ca-amount-secondary {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .ca-currency-secondary {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .back-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.25);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .back-button:hover {
+            background: var(--accent-blue-dark);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .ca-card {
+                padding: 2rem;
+            }
+
+            .ca-amount {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">ETU3641</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/clients">Clients</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/demandes">Demandes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/options">Options</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/devis">Devis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/devis/chiffre-affaires">Chiffre d'Affaires</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="container">
+        <h1 class="page-title">Chiffre d'Affaires</h1>
+
+        <!-- Boutons d'action -->
+    <div class="d-flex gap-2 justify-content-center mb-4">
+        <a href="/devis/new" class="btn btn-success" title="Ajouter un devis">
+            + Ajouter un devis
+        </a>
+        <a href="/devis" class="btn btn-outline-primary" title="Voir la liste des devis">
+            Voir les devis
+        </a>
+    </div>
+
+    <!-- Chiffre d'affaires principal -->
+    <div class="ca-card" th:if="${statistics}">
+        <div class="ca-title">Chiffre d'Affaires Prévisionnel</div>
+        <div class="ca-amount" th:text="${#numbers.formatDecimal(statistics.chiffreAffairesTotal, 0, 'COMMA', 2, 'POINT')}">0.00</div>
+        <div class="ca-currency">Ar</div>
+    </div>
+
+    <!-- Détails du chiffre d'affaires par statut -->
+    <div class="row mt-4" th:if="${statistics}">
+        <div class="col-md-6 mb-3">
+            <div class="ca-card-secondary">
+                <div class="ca-title-secondary">CA Devis Créés</div>
+                <div class="ca-amount-secondary" th:text="${#numbers.formatDecimal(statistics.chiffreAffairesCrees, 0, 'COMMA', 2, 'POINT')}">0.00</div>
+                <div class="ca-currency-secondary">Ar</div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="ca-card-secondary">
+                <div class="ca-title-secondary">CA Devis Acceptés</div>
+                <div class="ca-amount-secondary" th:text="${#numbers.formatDecimal(statistics.chiffreAffairesAcceptes, 0, 'COMMA', 2, 'POINT')}">0.00</div>
+                <div class="ca-currency-secondary">Ar</div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="ca-card-secondary">
+                <div class="ca-title-secondary">CA Devis Rejetés</div>
+                <div class="ca-amount-secondary" th:text="${#numbers.formatDecimal(statistics.chiffreAffairesRejetes, 0, 'COMMA', 2, 'POINT')}">0.00</div>
+                <div class="ca-currency-secondary">Ar</div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="ca-card-secondary">
+                <div class="ca-title-secondary">CA Études</div>
+                <div class="ca-amount-secondary" th:text="${#numbers.formatDecimal(statistics.chiffreAffairesEtudes, 0, 'COMMA', 2, 'POINT')}">0.00</div>
+                <div class="ca-currency-secondary">Ar</div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="ca-card-secondary">
+                <div class="ca-title-secondary">CA Forages</div>
+                <div class="ca-amount-secondary" th:text="${#numbers.formatDecimal(statistics.chiffreAffairesForages, 0, 'COMMA', 2, 'POINT')}">0.00</div>
+                <div class="ca-currency-secondary">Ar</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Bouton retour -->
+    <a href="/devis" class="back-button" title="Retour à la liste des devis">
+        ←
+    </a>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
 
 @Service
 public class DevisService {
@@ -25,6 +27,12 @@ public class DevisService {
     
     @Autowired
     private DemandeRepository demandeRepository;
+    
+    @Autowired
+    private StatutDevisService statutDevisService;
+    
+    @Autowired
+    private TypeDevisService typeDevisService;
     
     /**
      * Récupérer tous les devis avec demande et client
@@ -98,15 +106,54 @@ public class DevisService {
     }
     
     /**
-     * Mettre à jour le statut d'un devis
+     * Obtenir le libellé de statut correct pour l'affichage
+     */
+    public String getStatutLibelleForDisplay(Devis devis) {
+        // D'abord, essayer de trouver un statut personnalisé avec le même libellé
+        java.util.List<com.example.forage.model.StatutDevis> statutsDevis = statutDevisService.getAllStatutsDevis();
+        
+        // Si le devis a un statut personnalisé (qu'on a stocké comme ACCEPTÉ), 
+        // on doit trouver le bon libellé basé sur une logique métier
+        // Pour l'instant, on retourne le libellé de l'énumération
+        return devis.getStatut().getLibelle();
+    }
+    
+    /**
+     * Mettre à jour le statut d'un devis avec libellé dynamique
      */
     @Transactional
-    public Devis updateStatutDevis(Long id, Devis.StatutDevis nouveauStatut) {
+    public Devis updateStatutDevisByLibelle(Long id, String nouveauStatutLibelle) {
         Optional<Devis> devisOpt = devisRepository.findById(id);
         if (devisOpt.isPresent()) {
             Devis devis = devisOpt.get();
-            devis.setStatut(nouveauStatut);
-            return devisRepository.save(devis);
+            
+            // D'abord, chercher dans l'énumération (statuts par défaut)
+            for (Devis.StatutDevis statutEnum : Devis.StatutDevis.values()) {
+                if (statutEnum.getLibelle().equalsIgnoreCase(nouveauStatutLibelle)) {
+                    devis.setStatut(statutEnum);
+                    // Vider le libellé personnalisé pour les statuts par défaut
+                    devis.setStatutPersonnaliseLibelle(null);
+                    return devisRepository.save(devis);
+                }
+            }
+            
+            // Si le statut n'est pas dans l'énumération, vérifier s'il existe dans la base
+            java.util.List<com.example.forage.model.StatutDevis> statutsDevis = statutDevisService.getAllStatutsDevis();
+            boolean statutExists = statutsDevis.stream()
+                    .anyMatch(statut -> statut.getLibelle().equalsIgnoreCase(nouveauStatutLibelle));
+            
+            if (statutExists) {
+                // Pour les statuts personnalisés, stocker le libellé personnalisé
+                devis.setStatutPersonnaliseLibelle(nouveauStatutLibelle);
+                // Utiliser un statut par défaut pour la compatibilité
+                devis.setStatut(Devis.StatutDevis.ACCEPTE);
+                return devisRepository.save(devis);
+            } else {
+                // Si le statut n'existe même pas dans la base, utiliser CREE
+                devis.setStatut(Devis.StatutDevis.CREE);
+                devis.setStatutPersonnaliseLibelle(null);
+                return devisRepository.save(devis);
+            }
         }
         return null;
     }
@@ -247,6 +294,108 @@ public class DevisService {
     }
     
     /**
+     * Calculer le chiffre d'affaires prévisionnel total
+     */
+    public Double getChiffreAffairesPrevisionnel() {
+        return devisRepository.calculateChiffreAffairesPrevisionnel();
+    }
+    
+    /**
+     * Calculer le chiffre d'affaires prévisionnel par statut
+     */
+    public Double getChiffreAffairesPrevisionnelByStatut(Devis.StatutDevis statut) {
+        return devisRepository.calculateChiffreAffairesPrevisionnelByStatut(statut);
+    }
+    
+    /**
+     * Calculer le chiffre d'affaires prévisionnel par type
+     */
+    public Double getChiffreAffairesPrevisionnelByType(String typeDevis) {
+        return devisRepository.calculateChiffreAffairesPrevisionnelByType(typeDevis);
+    }
+    
+    /**
+     * Calculer le chiffre d'affaires prévisionnel par période
+     */
+    public Double getChiffreAffairesPrevisionnelByPeriode(LocalDateTime startDate, LocalDateTime endDate) {
+        return devisRepository.calculateChiffreAffairesPrevisionnelByPeriod(startDate, endDate);
+    }
+    
+    /**
+     * Récupérer tous les types de devis disponibles
+     */
+    public Set<String> getAllTypesDevis() {
+        List<Devis> allDevis = devisRepository.findAll();
+        Set<String> types = new HashSet<>();
+        
+        for (Devis devis : allDevis) {
+            if (devis.getTypeDevis() != null && !devis.getTypeDevis().trim().isEmpty()) {
+                types.add(devis.getTypeDevis());
+            }
+        }
+        
+        // Ajouter les types par défaut si aucun n'existe
+        if (types.isEmpty()) {
+            types.add("ETUDE");
+            types.add("FORAGE");
+        }
+        
+        return types;
+    }
+    
+    /**
+     * Ajouter un nouveau type de devis
+     */
+    public void addTypeDevis(String typeDevis) {
+        if (typeDevis == null || typeDevis.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le type de devis ne peut pas être vide");
+        }
+        
+        // Vérifier si le type existe déjà
+        Set<String> existingTypes = getAllTypesDevis();
+        if (existingTypes.contains(typeDevis.trim().toUpperCase())) {
+            throw new IllegalArgumentException("Ce type de devis existe déjà");
+        }
+        
+        // Le type sera ajouté automatiquement lorsqu'un devis sera créé avec ce type
+        // Pour l'instant, on ne fait rien de spécial car les types sont dynamiques
+    }
+    
+    /**
+     * Mettre à jour un type de devis
+     */
+    public void updateTypeDevis(String oldType, String newType) {
+        if (oldType == null || oldType.trim().isEmpty() || newType == null || newType.trim().isEmpty()) {
+            throw new IllegalArgumentException("Les types de devis ne peuvent pas être vides");
+        }
+        
+        // Mettre à jour tous les devis qui ont l'ancien type
+        List<Devis> devisToUpdate = devisRepository.findByTypeDevis(oldType);
+        for (Devis devis : devisToUpdate) {
+            devis.setTypeDevis(newType.trim().toUpperCase());
+            devisRepository.save(devis);
+        }
+    }
+    
+    /**
+     * Supprimer un type de devis
+     */
+    public void deleteTypeDevis(String type) {
+        if (type == null || type.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le type de devis ne peut pas être vide");
+        }
+        
+        // Vérifier si des devis utilisent ce type
+        List<Devis> devisWithThisType = devisRepository.findByTypeDevis(type);
+        if (!devisWithThisType.isEmpty()) {
+            throw new IllegalArgumentException("Impossible de supprimer ce type car il est utilisé par " + devisWithThisType.size() + " devis");
+        }
+        
+        // Comme les types sont dynamiques, pas besoin de suppression explicite
+        // Le type disparaîtra automatiquement s'il n'est plus utilisé
+    }
+    
+    /**
      * Obtenir les statistiques des devis
      */
     public DevisStatistics getStatistics() {
@@ -254,10 +403,91 @@ public class DevisService {
         stats.setTotalDevis(devisRepository.count());
         stats.setTotalCrees(devisRepository.countByStatut(Devis.StatutDevis.CREE));
         stats.setTotalAcceptes(devisRepository.countByStatut(Devis.StatutDevis.ACCEPTE));
-        stats.setTotalRefuses(devisRepository.countByStatut(Devis.StatutDevis.REFUSE));
-        stats.setTotalEtudes(devisRepository.countByTypeDevis("Etude"));
-        stats.setTotalForages(devisRepository.countByTypeDevis("Forage"));
+        stats.setTotalRejetes(devisRepository.countByStatut(Devis.StatutDevis.REFUSE));
+        stats.setTotalEtudes(devisRepository.countByTypeDevis("ETUDE"));
+        stats.setTotalForages(devisRepository.countByTypeDevis("FORAGE"));
+        
+        // Calculer les chiffres d'affaires
+        stats.setChiffreAffairesTotal(devisRepository.calculateChiffreAffairesPrevisionnel());
+        stats.setChiffreAffairesCrees(devisRepository.calculateChiffreAffairesPrevisionnelByStatut(Devis.StatutDevis.CREE));
+        stats.setChiffreAffairesAcceptes(devisRepository.calculateChiffreAffairesPrevisionnelByStatut(Devis.StatutDevis.ACCEPTE));
+        stats.setChiffreAffairesRejetes(devisRepository.calculateChiffreAffairesPrevisionnelByStatut(Devis.StatutDevis.REFUSE));
+        stats.setChiffreAffairesEtudes(devisRepository.calculateChiffreAffairesPrevisionnelByType("ETUDE"));
+        stats.setChiffreAffairesForages(devisRepository.calculateChiffreAffairesPrevisionnelByType("FORAGE"));
+        
         return stats;
+    }
+    
+    /**
+     * Récupérer un client par son ID
+     */
+    public Optional<com.example.forage.model.Client> getClientById(Long clientId) {
+        // Chercher un devis qui appartient à ce client pour récupérer les infos du client
+        List<Devis> devis = devisRepository.findByClientIdOrderByDateCreationDesc(clientId);
+        if (devis.isEmpty()) {
+            return Optional.empty();
+        }
+        // Récupérer le client depuis le premier devis trouvé
+        return Optional.of(devis.get(0).getDemande().getClient());
+    }
+    
+    /**
+     * Mettre à jour un devis avec ses détails
+     */
+    @Transactional
+    public void updateDevisWithDetails(Devis devis, Long[] detailsIds, String[] detailsDeleted, String[] libelles, Double[] prixUnitaires, Integer[] quantites) {
+        System.out.println("=== MISE À JOUR DEVIS ID: " + devis.getId() + " ===");
+        
+        // 1. Supprimer TOUS les détails existants
+        List<DevisDetails> existingDetails = devisDetailsRepository.findByDevisIdOrderByLibelle(devis.getId());
+        System.out.println("Suppression de " + existingDetails.size() + " détails existants");
+        
+        for (DevisDetails detail : existingDetails) {
+            System.out.println("Suppression du détail ID: " + detail.getId());
+            devisDetailsRepository.delete(detail);
+        }
+        devisDetailsRepository.flush();
+        
+        // 2. Recréer uniquement les détails non supprimés
+        Double total = 0.0;
+        for (int i = 0; i < libelles.length; i++) {
+            // Ignorer les lignes marquées comme supprimées
+            if (detailsDeleted != null && i < detailsDeleted.length && "true".equals(detailsDeleted[i])) {
+                System.out.println("Ignorée ligne supprimée " + i);
+                continue;
+            }
+            
+            if (libelles[i] != null && !libelles[i].trim().isEmpty() && 
+                prixUnitaires[i] != null && prixUnitaires[i] > 0 && 
+                quantites[i] != null && quantites[i] > 0) {
+                
+                // Appliquer la réduction si nécessaire
+                Double prixUnitaire = prixUnitaires[i];
+                if (prixUnitaire >= 1000000) {
+                    prixUnitaire = prixUnitaire * 0.9; // 10% de réduction
+                }
+                
+                Double montant = prixUnitaire * quantites[i];
+                total += montant;
+                
+                // Créer un nouveau détail
+                DevisDetails detail = new DevisDetails();
+                detail.setDevis(devis);
+                detail.setLibelle(libelles[i]);
+                detail.setPrixUnitaire(prixUnitaire);
+                detail.setQuantite(quantites[i]);
+                detail.setMontant(montant);
+                
+                DevisDetails savedDetail = devisDetailsRepository.save(detail);
+                System.out.println("Créé nouveau détail ID: " + savedDetail.getId() + " - " + libelles[i]);
+            }
+        }
+        
+        // 3. Mettre à jour le total du devis
+        devis.setMontantTotal(total);
+        devisRepository.save(devis);
+        System.out.println("Total mis à jour: " + total);
+        System.out.println("=== FIN MISE À JOUR DEVIS ===");
     }
     
     /**
@@ -267,22 +497,68 @@ public class DevisService {
         private long totalDevis;
         private long totalCrees;
         private long totalAcceptes;
-        private long totalRefuses;
+        private long totalRejetes;
         private long totalEtudes;
         private long totalForages;
         
-        // Getters et Setters
+        // Chiffre d'affaires prévisionnel
+        private Double chiffreAffairesTotal;
+        private Double chiffreAffairesCrees;
+        private Double chiffreAffairesAcceptes;
+        private Double chiffreAffairesRejetes;
+        private Double chiffreAffairesEtudes;
+        private Double chiffreAffairesForages;
+        
+        // Getters et Setters pour les compteurs
         public long getTotalDevis() { return totalDevis; }
         public void setTotalDevis(long totalDevis) { this.totalDevis = totalDevis; }
         public long getTotalCrees() { return totalCrees; }
         public void setTotalCrees(long totalCrees) { this.totalCrees = totalCrees; }
         public long getTotalAcceptes() { return totalAcceptes; }
         public void setTotalAcceptes(long totalAcceptes) { this.totalAcceptes = totalAcceptes; }
-        public long getTotalRefuses() { return totalRefuses; }
-        public void setTotalRefuses(long totalRefuses) { this.totalRefuses = totalRefuses; }
+        public long getTotalRejetes() { return totalRejetes; }
+        public void setTotalRejetes(long totalRejetes) { this.totalRejetes = totalRejetes; }
         public long getTotalEtudes() { return totalEtudes; }
         public void setTotalEtudes(long totalEtudes) { this.totalEtudes = totalEtudes; }
         public long getTotalForages() { return totalForages; }
         public void setTotalForages(long totalForages) { this.totalForages = totalForages; }
+        
+        // Getters et Setters pour le chiffre d'affaires
+        public Double getChiffreAffairesTotal() { return chiffreAffairesTotal; }
+        public void setChiffreAffairesTotal(Double chiffreAffairesTotal) { this.chiffreAffairesTotal = chiffreAffairesTotal; }
+        public Double getChiffreAffairesCrees() { return chiffreAffairesCrees; }
+        public void setChiffreAffairesCrees(Double chiffreAffairesCrees) { this.chiffreAffairesCrees = chiffreAffairesCrees; }
+        public Double getChiffreAffairesAcceptes() { return chiffreAffairesAcceptes; }
+        public void setChiffreAffairesAcceptes(Double chiffreAffairesAcceptes) { this.chiffreAffairesAcceptes = chiffreAffairesAcceptes; }
+        public Double getChiffreAffairesRejetes() { return chiffreAffairesRejetes; }
+        public void setChiffreAffairesRejetes(Double chiffreAffairesRejetes) { this.chiffreAffairesRejetes = chiffreAffairesRejetes; }
+        public Double getChiffreAffairesEtudes() { return chiffreAffairesEtudes; }
+        public void setChiffreAffairesEtudes(Double chiffreAffairesEtudes) { this.chiffreAffairesEtudes = chiffreAffairesEtudes; }
+        public Double getChiffreAffairesForages() { return chiffreAffairesForages; }
+        public void setChiffreAffairesForages(Double chiffreAffairesForages) { this.chiffreAffairesForages = chiffreAffairesForages; }
+    }
+    
+    /**
+     * Recherche des devis par lieu (via la demande associée)
+     */
+    public List<Devis> searchDevisByLieu(String lieu) {
+        return devisRepository.findByDemande_LieuContainingIgnoreCase(lieu);
+    }
+    
+    /**
+     * Récupère les devis par statut (libellé dynamique)
+     */
+    public List<Devis> getDevisByStatut(String statutLibelle) {
+        try {
+            // Essayer de convertir en énumération d'abord (compatibilité)
+            Devis.StatutDevis statutEnum = Devis.StatutDevis.valueOf(statutLibelle.toUpperCase());
+            return devisRepository.findByStatutOrderByDateCreationDesc(statutEnum);
+        } catch (IllegalArgumentException e) {
+            // Si ce n'est pas une énumération valide, filtrer par libellé
+            List<Devis> allDevis = getAllDevisWithDemandeAndClient();
+            return allDevis.stream()
+                    .filter(devis -> devis.getStatut().getLibelle().equalsIgnoreCase(statutLibelle))
+                    .collect(java.util.stream.Collectors.toList());
+        }
     }
 }

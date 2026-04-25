@@ -21,7 +21,6 @@ public class Devis {
     private Demande demande;
     
     @NotBlank(message = "Le type de devis est obligatoire")
-    @Pattern(regexp = "^(Etude|Forage)$", message = "Le type doit être 'Etude' ou 'Forage'")
     @Column(name = "type_devis", nullable = false)
     private String typeDevis;
     
@@ -29,6 +28,9 @@ public class Devis {
     @Enumerated(EnumType.STRING)
     @Column(name = "statut", nullable = false)
     private StatutDevis statut;
+    
+    @Column(name = "statut_personnalise_libelle")
+    private String statutPersonnaliseLibelle;
     
     @Column(name = "montant_total", nullable = false)
     private Double montantTotal;
@@ -114,6 +116,14 @@ public class Devis {
         this.statut = statut;
     }
     
+    public String getStatutPersonnaliseLibelle() {
+        return statutPersonnaliseLibelle;
+    }
+    
+    public void setStatutPersonnaliseLibelle(String statutPersonnaliseLibelle) {
+        this.statutPersonnaliseLibelle = statutPersonnaliseLibelle;
+    }
+    
     public Double getMontantTotal() {
         return montantTotal;
     }
@@ -148,6 +158,11 @@ public class Devis {
     
     // Méthodes utilitaires
     public String getStatutLibelle() {
+        // Si un libellé personnalisé est défini, l'utiliser
+        if (statutPersonnaliseLibelle != null && !statutPersonnaliseLibelle.trim().isEmpty()) {
+            return statutPersonnaliseLibelle;
+        }
+        // Sinon, utiliser le libellé de l'énumération
         return statut != null ? statut.getLibelle() : "";
     }
     

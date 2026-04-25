@@ -310,6 +310,17 @@
             color: var(--accent-red) !important;
         }
         
+        .reduction-indicator {
+            color: var(--accent-green) !important;
+            font-weight: 500;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -353,7 +364,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="/">Forage</a>
+            <a class="navbar-brand" href="/">ETU3641</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -369,10 +380,13 @@
                         <a class="nav-link" href="/demandes">Demandes</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/statuts">Statuts</a>
+                        <a class="nav-link" href="/options">Options</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" href="/devis">Devis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/devis/chiffre-affaires">Chiffre d'Affaires</a>
                     </li>
                 </ul>
             </div>
@@ -396,7 +410,9 @@
                 </div>
             </div>
             <div class="card-body">
-                <form id="devisForm" method="post" th:action="@{/devis/save}">
+                <form id="devisForm" method="post" th:action="${devis.id != null ? '/devis/update' : '/devis/save'}">
+                    <!-- Champ caché pour l'ID en cas de modification -->
+                    <input type="hidden" name="id" th:value="${devis.id != null ? devis.id : ''}">
                     <!-- Informations principales -->
                     <div class="row mb-4">
                         <div class="col-md-6">
@@ -406,6 +422,7 @@
                                    id="demandeId" 
                                    name="demandeId"
                                    placeholder="Entrez l'ID de la demande"
+                                   th:value="${devis.demande != null ? devis.demande.id : ''}"
                                    required>
                             <div class="form-text">
                                 Entrez l'ID de la demande et quittez le champ pour récupérer les détails
@@ -415,8 +432,11 @@
                             <label for="typeDevis" class="form-label">Type de devis *</label>
                             <select class="form-select" id="typeDevis" name="typeDevis" required>
                                 <option value="">-- Choisir le type --</option>
-                                <option value="Etude">Étude</option>
-                                <option value="Forage">Forage</option>
+                                <option th:each="type : ${typesDevis}" 
+                                        th:value="${type.libelle}" 
+                                        th:text="${type.libelle}"
+                                        th:selected="${devis.typeDevis != null and devis.typeDevis == type.libelle}">
+                                </option>
                             </select>
                         </div>
                     </div>
@@ -460,6 +480,12 @@
                     <!-- Tableau des détails du devis -->
                     <div class="mb-4">
                         <h5 class="mb-3">Détails du devis</h5>
+                        
+                        <!-- Note sur la réduction -->
+                        <div class="alert alert-info" style="background-color: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--accent-blue); color: var(--accent-blue);">
+                            <strong>Réduction automatique :</strong> Si le prix unitaire est supérieur ou égal à 1.000.000 Ar, une réduction de 10% sera appliquée automatiquement sur le prix unitaire uniquement.
+                        </div>
+                        
                         <div class="table-responsive">
                             <table class="table table-bordered" id="detailsTable">
                                 <thead>
@@ -472,6 +498,48 @@
                                     </tr>
                                 </thead>
                                 <tbody id="detailsBody">
+                                    <!-- Lignes pré-remplies pour la modification -->
+                                    <tr th:each="detail, iterStat : ${devis.details}" th:id="'row_' + ${iterStat.index}">
+                                        <td>
+                                            <input type="hidden" name="details_id[]" th:value="${detail.id}">
+                                            <input type="hidden" name="details_deleted[]" value="false">
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   name="details_libelle[]" 
+                                                   th:value="${detail.libelle}"
+                                                   placeholder="Libellé du service"
+                                                   required>
+                                        </td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   name="details_prixUnitaire[]"
+                                                   th:value="${detail.prixUnitaire}"
+                                                   placeholder="Prix unitaire"
+                                                   min="0"
+                                                   step="0.01"
+                                                   required
+                                                   oninput="calculateRowTotal(${iterStat.index})">
+                                        </td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   name="details_quantite[]"
+                                                   th:value="${detail.quantite}"
+                                                   placeholder="Quantité"
+                                                   min="1"
+                                                   required
+                                                   oninput="calculateRowTotal(${iterStat.index})">
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success" th:id="'montant_' + ${iterStat.index}" th:text="${#numbers.formatDecimal(detail.montant, 2, 'COMMA', 2, 'POINT')} + ' Ar'">0.00 Ar</span>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)" title="Supprimer cette ligne">
+                                                Supprimer
+                                            </button>
+                                        </td>
+                                    </tr>
                                     <!-- Lignes ajoutées dynamiquement -->
                                 </tbody>
                                 <tfoot>
@@ -508,6 +576,23 @@
     <script>
         let rowCount = 0;
 
+        // Initialisation au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Compter les lignes existantes et initialiser rowCount
+            const existingRows = document.querySelectorAll('#detailsBody tr');
+            rowCount = existingRows.length;
+            
+            // Afficher le total existant du devis si on est en mode modification
+            const totalMontantElement = document.getElementById('totalMontant');
+            const devisTotal = /*[[${devis.montantTotal}]]*/ 0.00;
+            if (totalMontantElement && devisTotal > 0) {
+                totalMontantElement.textContent = devisTotal.toFixed(2);
+            }
+            
+            // Calculer le total initial si on est en mode modification
+            calculateTotal();
+        });
+
         // Ajouter une ligne de détail
         function addDetailRow() {
             rowCount++;
@@ -516,13 +601,15 @@
             row.setAttribute('data-row-id', rowCount);
             row.innerHTML = `
                 <td>
+                    <input type="hidden" name="details_id[]" value="">
+                    <input type="hidden" name="details_deleted[]" value="false">
                     <input type="text" class="form-control" name="details_libelle[]" 
                            placeholder="Libellé du service" required>
                 </td>
                 <td>
                     <input type="number" class="form-control" name="details_prixUnitaire[]" 
                            placeholder="Prix unitaire (Ar)" step="0.01" min="0.01" required
-                           oninput="calculateRowTotal(${rowCount})">
+                           oninput="calculateRowTotal(${rowCount})" title="Réduction automatique de 10% si prix unitaire ≥ 1.000.000 Ar">
                 </td>
                 <td>
                     <input type="number" class="form-control" name="details_quantite[]" 
@@ -544,7 +631,45 @@
         // Supprimer une ligne
         function removeRow(button) {
             const row = button.closest('tr');
-            row.remove();
+            const deletedInput = row.querySelector('input[name="details_deleted[]"]');
+            
+            if (deletedInput) {
+                // Si c'est une ligne existante, la marquer comme supprimée
+                deletedInput.value = "true";
+                row.style.opacity = '0.5';
+                row.style.textDecoration = 'line-through';
+                button.textContent = 'Annuler';
+                button.onclick = function() { restoreRow(this); };
+                
+                // Désactiver les champs de la ligne
+                const inputs = row.querySelectorAll('input[type="text"], input[type="number"]');
+                inputs.forEach(input => input.disabled = true);
+            } else {
+                // Si c'est une nouvelle ligne, la retirer complètement
+                row.remove();
+            }
+            
+            calculateTotal();
+        }
+        
+        // Restaurer une ligne supprimée
+        function restoreRow(button) {
+            const row = button.closest('tr');
+            const deletedInput = row.querySelector('input[name="details_deleted[]"]');
+            
+            if (deletedInput && deletedInput.value === "true") {
+                // Restaurer la ligne
+                deletedInput.value = "false";
+                row.style.opacity = '1';
+                row.style.textDecoration = 'none';
+                button.textContent = 'Supprimer';
+                button.onclick = function() { removeRow(this); };
+                
+                // Réactiver les champs de la ligne
+                const inputs = row.querySelectorAll('input[type="text"], input[type="number"]');
+                inputs.forEach(input => input.disabled = false);
+            }
+            
             calculateTotal();
         }
 
@@ -558,11 +683,38 @@
             const montantElement = row.querySelector(`[id^="montant_"]`);
             
             if (prixUnitaireInput && quantiteInput && montantElement) {
-                const prixUnitaire = parseFloat(prixUnitaireInput.value);
+                let prixUnitaire = parseFloat(prixUnitaireInput.value);
                 const quantite = parseInt(quantiteInput.value);
                 
-                if (!isNaN(prixUnitaire) && !isNaN(quantite) && prixUnitaire > 0 && quantite > 0) {
-                    const montant = prixUnitaire * quantite;
+                // Utiliser le prix unitaire original pour le calcul
+                let prixUnitaireCalcul = prixUnitaire;
+                let aReduction = false;
+                
+                // Appliquer une réduction de 10% si PU >= 1.000.000 Ar
+                if (prixUnitaire >= 1000000) {
+                    prixUnitaireCalcul = prixUnitaire * 0.9; // Réduction de 10%
+                    aReduction = true;
+                }
+                
+                // Afficher une indication de réduction
+                let indicator = row.querySelector('.reduction-indicator');
+                if (aReduction) {
+                    if (!indicator) {
+                        indicator = document.createElement('small');
+                        indicator.className = 'reduction-indicator text-success d-block mt-1';
+                        indicator.style.fontSize = '0.75rem';
+                        prixUnitaireInput.parentNode.appendChild(indicator);
+                    }
+                    indicator.textContent = `Prix unitaire réduit de 10% (≥1.000.000 Ar) - ${prixUnitaire.toFixed(2)} Ar → ${prixUnitaireCalcul.toFixed(2)} Ar`;
+                } else {
+                    // Supprimer l'indication de réduction si le prix est inférieur à 1.000.000
+                    if (indicator) {
+                        indicator.remove();
+                    }
+                }
+                
+                if (!isNaN(prixUnitaireCalcul) && !isNaN(quantite) && prixUnitaireCalcul > 0 && quantite > 0) {
+                    const montant = prixUnitaireCalcul * quantite;
                     montantElement.textContent = montant.toFixed(2) + ' Ar';
                 } else {
                     montantElement.textContent = '0.00 Ar';
@@ -665,34 +817,54 @@
 
         // Validation du formulaire avant soumission
         document.getElementById('devisForm').addEventListener('submit', function(e) {
-            console.log('Validation du formulaire...');
+            console.log('=== DÉBUT VALIDATION FORMULAIRE ===');
             
             const detailsBody = document.getElementById('detailsBody');
             const rows = detailsBody.querySelectorAll('tr');
             
+            console.log('Nombre total de lignes trouvées: ' + rows.length);
+            
             if (rows.length === 0) {
+                console.log('BLOCAGE: Aucune ligne trouvée');
                 e.preventDefault();
                 alert('Veuillez ajouter au moins une ligne de détail');
                 return;
             }
             
-            // Vérifier que chaque ligne a des valeurs valides
             let validRows = 0;
-            rows.forEach((row, index) => {
-                const libelle = row.querySelector('input[name="details_libelle[]"]').value;
-                const prix = row.querySelector('input[name="details_prixUnitaire[]"]').value;
-                const quantite = row.querySelector('input[name="details_quantite[]"]').value;
+            rows.forEach(function(row, index) {
+                console.log(`Vérification ligne ${index}:`);
                 
-                console.log(`Ligne ${index}: libelle="${libelle}", prix="${prix}", quantite="${quantite}"`);
+                // Vérifier si la ligne est marquée comme supprimée
+                const deletedInput = row.querySelector('input[name="details_deleted[]"]');
+                const isDeleted = deletedInput && deletedInput.value === 'true';
+                console.log(`  - Supprimée: ${isDeleted}`);
                 
-                if (libelle && prix && quantite && parseFloat(prix) > 0 && parseInt(quantite) > 0) {
+                if (isDeleted) {
+                    console.log(`  - Ligne ${index} ignorée (supprimée)`);
+                    return; // Skip deleted rows
+                }
+                
+                const libelle = row.querySelector('input[name="details_libelle[]"]').value.trim();
+                const prixUnitaire = parseFloat(row.querySelector('input[name="details_prixUnitaire[]"]').value);
+                const quantite = parseInt(row.querySelector('input[name="details_quantite[]"]').value);
+                
+                console.log(`  - Libelle: "${libelle}"`);
+                console.log(`  - Prix: ${prixUnitaire}`);
+                console.log(`  - Quantité: ${quantite}`);
+                
+                if (libelle && !isNaN(prixUnitaire) && prixUnitaire > 0 && !isNaN(quantite) && quantite > 0) {
                     validRows++;
+                    console.log(`  - Ligne ${index} VALIDÉE`);
+                } else {
+                    console.log(`  - Ligne ${index} INVALIDE`);
                 }
             });
             
             console.log(`Lignes valides: ${validRows}/${rows.length}`);
             
             if (validRows === 0) {
+                console.log('BLOCAGE: Aucune ligne valide');
                 e.preventDefault();
                 alert('Veuillez remplir correctement au moins une ligne de détail');
                 return;
@@ -704,6 +876,7 @@
             submitBtn.textContent = 'Enregistrement en cours...';
             
             console.log('Formulaire valide, envoi en cours...');
+            console.log('=== FIN VALIDATION FORMULAIRE ===');
         });
 
         // Ajouter une ligne par défaut au chargement

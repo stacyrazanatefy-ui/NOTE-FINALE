@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/navbar :: head}">
+    <!-- Styles spécifiques à la page -->
+    <style>
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--accent-blue);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            width: 45%;
+        }
+
+        .timeline-item:nth-child(odd) {
+            left: 0;
+            text-align: right;
+        }
+
+        .timeline-item:nth-child(even) {
+            left: 55%;
+            text-align: left;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 1.5rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            border: 3px solid var(--bg-tertiary);
+        }
+
+        .timeline-item:nth-child(odd)::before {
+            right: -8px;
+        }
+
+        .timeline-item:nth-child(even)::before {
+            left: -8px;
+        }
+
+        .timeline-content {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .timeline-content:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.2);
+        }
+
+        .timeline-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-statut {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-statut.creee {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+        }
+
+        .timeline-statut.confirmee {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .timeline-statut.annulee {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .timeline-observation {
+            margin-top: 0.5rem;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        .back-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .back-button:hover {
+            background: var(--accent-blue-dark);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .demande-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .demande-info h5 {
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 20px;
+            }
+
+            .timeline-item {
+                width: calc(100% - 40px);
+                left: 40px !important;
+                text-align: left !important;
+            }
+
+            .timeline-item::before {
+                left: -8px !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <!-- Contenu principal -->
+    <div class="container">
+        <h1 class="page-title">Historique de la Demande</h1>
+
+        <!-- Informations de la demande -->
+        <div class="demande-info" th:if="${not #lists.isEmpty(historique)}">
+            <h5>Informations de la demande</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>ID Demande:</strong> <span th:text="${historique[0].demande.id}">1</span>
+                </div>
+                <div class="col-md-6">
+                    <strong>Libellé:</strong> <span th:text="${historique[0].demande.libelle}">Demande 1</span>
+                </div>
+                <div class="col-md-6">
+                    <strong>Client:</strong> <span th:text="${historique[0].demande.client != null ? historique[0].demande.client.nom : 'N/A'}">Client A</span>
+                </div>
+                <div class="col-md-6">
+                    <strong>Date de création:</strong> <span th:text="${#temporals.format(historique[0].date, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline de l'historique -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Évolution du statut</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div th:each="demandeStatut, iterStat : ${historique}" class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-date" th:text="${#temporals.format(demandeStatut.date, 'dd/MM/yyyy HH:mm')}">
+                                01/01/2024 10:00
+                            </div>
+                            <div class="timeline-statut" 
+                                 th:classappend="${demandeStatut.statut.libelle == 'DEMANDE_CREEE' ? 'creee' : 
+                                                demandeStatut.statut.libelle == 'DEMANDE_CONFIRMEE' ? 'confirmee' : 
+                                                demandeStatut.statut.libelle == 'DEMANDE_ANNULEE' ? 'annulee' : ''}"
+                                 th:text="${demandeStatut.statut.libelle}">
+                                DEMANDE_CREEE
+                            </div>
+                            <div class="timeline-observation" th:if="${demandeStatut.observation != null}">
+                                <strong>Observation:</strong> <span th:text="${demandeStatut.observation}">Observation</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div th:if="${#lists.isEmpty(historique)}" class="text-center text-muted">
+                        Aucun historique trouvé pour cette demande
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bouton retour -->
+    <a href="/demande-statuts" class="back-button" title="Retour à la liste">
+        <span>×</span>
+    </a>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/navbar :: scripts}"></div>
+</body>
+</html>

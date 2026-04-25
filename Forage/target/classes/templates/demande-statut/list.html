@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/navbar :: head}">
+    <!-- Styles spécifiques à la page -->
+    <style>
+        .observation-cell {
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+
+        .date-cell {
+            white-space: nowrap;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .observation-cell {
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <!-- Contenu principal -->
+    <div class="container">
+        <h1 class="page-title">Historique des Demandes-Statuts</h1>
+
+        <!-- Messages flash -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Tableau des demandes-statuts -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Liste des Demandes-Statuts</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Demande</th>
+                                <th>Client</th>
+                                <th>Statut</th>
+                                <th>Date</th>
+                                <th>Observation</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="demandeStatut : ${demandeStatuts}">
+                                <td th:text="${demandeStatut.id}">1</td>
+                                <td>
+                                    <strong th:text="${demandeStatut.demande.libelle}">Demande 1</strong>
+                                    <br>
+                                    <small class="text-muted" th:text="'ID: ' + ${demandeStatut.demande.id}">ID: 1</small>
+                                </td>
+                                <td th:text="${demandeStatut.demande.client != null ? demandeStatut.demande.client.nom : 'N/A'}">Client A</td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${demandeStatut.statut.libelle == 'DEMANDE_CREEE' ? 'badge-primary' : 
+                                                         demandeStatut.statut.libelle == 'DEMANDE_CONFIRMEE' ? 'badge-success' : 
+                                                         demandeStatut.statut.libelle == 'DEMANDE_ANNULEE' ? 'badge-danger' : 'badge-warning'}"
+                                          th:text="${demandeStatut.statut.libelle}">DEMANDE_CREEE</span>
+                                </td>
+                                <td class="date-cell" th:text="${#temporals.format(demandeStatut.date, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</td>
+                                <td class="observation-cell">
+                                    <span th:text="${demandeStatut.observation != null ? demandeStatut.observation : '-'}">Observation</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a th:href="@{/demande-statuts/historique/{demandeId}(demandeId=${demandeStatut.demande.id})}" 
+                                           class="btn btn-info btn-sm" title="Voir l'historique complet">
+                                            Historique
+                                        </a>
+                                        
+                                        <!-- Afficher les boutons d'action seulement pour le dernier statut -->
+                                        <th:block th:if="${demandeStatut.id == demandeStatutService.getLastStatutByDemandeId(demandeStatut.demande.id).orElse(null)?.id}">
+                                            <form th:action="@{/demande-statuts/confirmer/{demandeId}(demandeId=${demandeStatut.demande.id})}" 
+                                                  method="post" style="display: inline;">
+                                                <button type="submit" class="btn btn-success btn-sm" 
+                                                        th:disabled="${demandeStatut.statut.libelle == 'DEMANDE_CONFIRMEE'}"
+                                                        title="Confirmer la demande">
+                                                    Confirmer
+                                                </button>
+                                            </form>
+                                            
+                                            <form th:action="@{/demande-statuts/annuler/{demandeId}(demandeId=${demandeStatut.demande.id})}" 
+                                                  method="post" style="display: inline;">
+                                                <button type="submit" class="btn btn-warning btn-sm"
+                                                        th:disabled="${demandeStatut.statut.libelle == 'DEMANDE_ANNULEE'}" 
+                                                        title="Annuler la demande">
+                                                    Annuler
+                                                </button>
+                                            </form>
+                                            
+                                            <form th:action="@{/demande-statuts/supprimer/{demandeId}(demandeId=${demandeStatut.demande.id})}" 
+                                                  method="post" style="display: inline;" 
+                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette demande et tout son historique ?')">
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Supprimer la demande">
+                                                    Supprimer
+                                                </button>
+                                            </form>
+                                        </th:block>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr th:if="${#lists.isEmpty(demandeStatuts)}">
+                                <td colspan="7" class="text-center text-muted">
+                                    Aucun demande-statut trouvé
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/navbar :: scripts}"></div>
+</body>
+</html>

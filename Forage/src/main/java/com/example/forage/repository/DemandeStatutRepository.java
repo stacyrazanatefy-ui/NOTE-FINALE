@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -34,4 +35,22 @@ public interface DemandeStatutRepository extends JpaRepository<DemandeStatut, Lo
      */
     @Query("SELECT COUNT(ds) FROM DemandeStatut ds WHERE ds.demande.id = :demandeId")
     long countByDemandeId(@Param("demandeId") Long demandeId);
+    
+    /**
+     * Récupérer les dates les plus récentes pour chaque demande
+     */
+    @Query("SELECT MAX(ds.date) FROM DemandeStatut ds GROUP BY ds.demande.id")
+    List<LocalDateTime> findLatestDatesForAllDemandes();
+    
+    /**
+     * Compter les demandes par statut (en utilisant les derniers statuts)
+     */
+    @Query("SELECT COUNT(ds) FROM DemandeStatut ds WHERE ds.statut = :statut AND ds.date IN :dates")
+    int countByStatutAndDateIn(@Param("statut") com.example.forage.model.Statut statut, @Param("dates") List<LocalDateTime> dates);
+    
+    /**
+     * Récupérer tous les derniers statuts de chaque demande
+     */
+    @Query("SELECT ds1 FROM DemandeStatut ds1 WHERE ds1.id IN (SELECT MAX(ds2.id) FROM DemandeStatut ds2 GROUP BY ds2.demande.id)")
+    List<DemandeStatut> findAllLatestStatuts();
 }

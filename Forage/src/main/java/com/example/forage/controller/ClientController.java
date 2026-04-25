@@ -1,6 +1,7 @@
 package com.example.forage.controller;
 
 import com.example.forage.model.Client;
+import com.example.forage.model.Demande;
 import com.example.forage.service.ClientService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +25,37 @@ public class ClientController {
      * Affiche la liste de tous les clients
      */
     @GetMapping
-    public String listClients(Model model) {
-        List<Client> clients = clientService.getAllClients();
+    public String listClients(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long clientId,
+            Model model) {
+        List<Client> clients;
+        
+        // Appliquer les filtres
+        if (clientId != null) {
+            // Filtrer par client spécifique
+            Optional<Client> clientOpt = clientService.getClientById(clientId);
+            if (clientOpt.isPresent()) {
+                clients = List.of(clientOpt.get());
+            } else {
+                clients = List.of(); // Aucun client si l'ID n'existe pas
+            }
+        } else if (search != null && !search.trim().isEmpty()) {
+            clients = clientService.searchClientsByNom(search.trim());
+        } else {
+            clients = clientService.getAllClients();
+        }
+        
         model.addAttribute("clients", clients);
         model.addAttribute("title", "Liste des Clients");
+        model.addAttribute("search", search);
+        model.addAttribute("clientId", clientId);
+        
+        // Ajouter les informations du client au modèle
+        if (clientId != null) {
+            Optional<Client> clientOpt = clientService.getClientById(clientId);
+            clientOpt.ifPresent(client -> model.addAttribute("filteredClient", client));
+        }
         return "client/list";
     }
     
@@ -120,6 +148,27 @@ public class ClientController {
             redirectAttributes.addFlashAttribute("error", "Client non trouvé");
         }
         return "redirect:/clients";
+    }
+    
+    /**
+     * Affiche les détails d'un client spécifique
+     */
+    @GetMapping("/{id}")
+    public String showClientDetails(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        Optional<Client> clientOpt = clientService.getClientById(id);
+        if (clientOpt.isPresent()) {
+            Client client = clientOpt.get();
+            
+            // Récupérer les demandes récentes du client
+            List<Demande> recentDemandes = clientService.getDemandesByClientId(id);
+            
+            model.addAttribute("client", client);
+            model.addAttribute("recentDemandes", recentDemandes);
+            return "client/details";
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Client non trouvé");
+            return "redirect:/clients";
+        }
     }
     
     /**
