@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Formulaire Type de Devis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --bg-dark: #0a0c10;
+            --bg-secondary: #111315;
+            --bg-tertiary: #1a1d21;
+            --bg-card: #1e2127;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-blue: #3b82f6;
+            --accent-blue-dark: #2563eb;
+            --accent-orange: #f59e0b;
+            --accent-orange-dark: #d97706;
+            --accent-red: #ef4444;
+            --accent-red-dark: #dc2626;
+            --accent-green: #10b981;
+            --border-color: #2a2e35;
+            --error-red: #ef4444;
+            --error-bg: rgba(239, 68, 68, 0.1);
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue) !important;
+        }
+        
+        .nav-link {
+            color: var(--text-secondary) !important;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 0.5rem 1rem !important;
+            border-radius: 6px;
+            margin: 0 0.25rem;
+        }
+        
+        .nav-link:hover {
+            color: var(--text-primary) !important;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .nav-link.active {
+            color: var(--accent-blue) !important;
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-header {
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1.25rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Formulaires */
+        .form-control {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        
+        .form-label {
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+        
+        /* Boutons */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-blue-dark);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-color: var(--accent-blue);
+        }
+        
+        /* Alertes */
+        .alert {
+            border-radius: 8px;
+            border: none;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .alert-danger {
+            background: var(--error-bg);
+            color: var(--error-red);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card-header {
+                padding: 1rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .d-md-flex {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+        
+        /* Champ requis */
+        .form-label[for="typeDevis"]::after {
+            content: "*";
+            color: var(--error-red);
+            margin-left: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">ETU3641</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/clients">Clients</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/demandes">Demandes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/options">Options</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link " href="/devis">Devis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/devis/chiffre-affaires">Chiffre d'Affaires</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0" th:text="${title}">Formulaire Type de Devis</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Messages -->
+                        <div th:if="${success}" class="alert alert-success" role="alert">
+                            <span th:text="${success}"></span>
+                        </div>
+                        <div th:if="${error}" class="alert alert-danger" role="alert">
+                            <span th:text="${error}"></span>
+                        </div>
+
+                        <form th:action="${action}" method="post">
+                            <!-- Champ caché pour l'ID (modification) -->
+                            <input type="hidden" name="id" th:if="${typeDevis != null and typeDevis.id != null}" th:value="${typeDevis.id}">
+                            
+                            <!-- Libellé -->
+                            <div class="mb-3">
+                                <label for="libelle" class="form-label">Libellé du type de devis</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="libelle" 
+                                       name="libelle"
+                                       th:value="${typeDevis != null ? typeDevis.libelle : ''}"
+                                       placeholder="Ex: ETUDE, FORAGE, MAINTENANCE"
+                                       maxlength="50"
+                                       required>
+                                <div class="text-secondary small mt-1">
+                                    Le libellé doit être unique et ne pas dépasser 50 caractères.
+                                </div>
+                            </div>
+                            
+                            <!-- Description -->
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description (optionnelle)</label>
+                                <textarea class="form-control" 
+                                          id="description" 
+                                          name="description"
+                                          rows="3"
+                                          placeholder="Description détaillée du type de devis..."
+                                          maxlength="255" th:text="${typeDevis != null ? typeDevis.description : ''}"></textarea>
+                                <div class="text-secondary small mt-1">
+                                    Description optionnelle pour expliquer l'usage de ce type de devis.
+                                </div>
+                            </div>
+                            
+                            <!-- Boutons -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/types-devis" class="btn btn-secondary">Annuler</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <span th:if="${typeDevis != null and typeDevis.id != null}">Mettre à jour</span>
+                                    <span th:unless="${typeDevis != null and typeDevis.id != null}">Ajouter</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Informations supplémentaires -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Types par défaut</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <span class="badge bg-primary">ETUDE</span>
+                            </div>
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <span class="badge bg-success">FORAGE</span>
+                            </div>
+                        </div>
+                        <div class="text-secondary small mt-2">
+                            Ces types sont créés automatiquement si aucun devis n'existe.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

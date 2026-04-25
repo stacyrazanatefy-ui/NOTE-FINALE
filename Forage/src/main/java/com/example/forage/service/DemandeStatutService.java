@@ -92,4 +92,71 @@ public class DemandeStatutService {
         DemandeStatut demandeStatut = new DemandeStatut(demande, statutOpt.get(), LocalDateTime.now());
         return demandeStatutRepository.save(demandeStatut);
     }
+    
+    /**
+     * Changer le statut d'une demande avec observation
+     */
+    public DemandeStatut changerStatutDemande(Long demandeId, String nouveauLibelleStatut, String observation) {
+        Optional<Statut> statutOpt = statutService.getStatutByLibelle(nouveauLibelleStatut);
+        if (statutOpt.isEmpty()) {
+            throw new RuntimeException("Statut non trouvé: " + nouveauLibelleStatut);
+        }
+        
+        Demande demande = new Demande();
+        demande.setId(demandeId);
+        
+        DemandeStatut demandeStatut = new DemandeStatut(demande, statutOpt.get(), LocalDateTime.now(), observation);
+        return demandeStatutRepository.save(demandeStatut);
+    }
+    
+    /**
+     * Récupérer un historique de statut par son ID
+     */
+    public Optional<DemandeStatut> getDemandeStatutById(Long id) {
+        return demandeStatutRepository.findById(id);
+    }
+    
+    /**
+     * Mettre à jour un historique de statut
+     */
+    public DemandeStatut updateDemandeStatut(Long id, String statutLibelle, String observation) {
+        Optional<DemandeStatut> demandeStatutOpt = demandeStatutRepository.findById(id);
+        if (demandeStatutOpt.isEmpty()) {
+            throw new RuntimeException("Historique non trouvé: " + id);
+        }
+        
+        Optional<Statut> statutOpt = statutService.getStatutByLibelle(statutLibelle);
+        if (statutOpt.isEmpty()) {
+            throw new RuntimeException("Statut non trouvé: " + statutLibelle);
+        }
+        
+        DemandeStatut demandeStatut = demandeStatutOpt.get();
+        demandeStatut.setStatut(statutOpt.get());
+        demandeStatut.setObservation(observation);
+        
+        return demandeStatutRepository.save(demandeStatut);
+    }
+    
+    /**
+     * Supprimer un historique de statut
+     */
+    public void deleteDemandeStatut(Long id) {
+        demandeStatutRepository.deleteById(id);
+    }
+    
+    /**
+     * Compter le nombre de demandes par statut
+     */
+    public int countDemandesByStatut(String libelleStatut) {
+        Optional<Statut> statutOpt = statutService.getStatutByLibelle(libelleStatut);
+        if (statutOpt.isEmpty()) {
+            return 0;
+        }
+        
+        // Compter les derniers statuts de chaque demande
+        List<DemandeStatut> derniersStatuts = demandeStatutRepository.findAllLatestStatuts();
+        return (int) derniersStatuts.stream()
+                .filter(ds -> ds.getStatut().equals(statutOpt.get()))
+                .count();
+    }
 }

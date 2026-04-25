@@ -33,6 +33,9 @@ public class Demande {
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
     
+    @OneToMany(mappedBy = "demande", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.Set<DemandeStatut> demandeStatuts;
+    
     // Constructeurs
     public Demande() {}
     
@@ -82,6 +85,14 @@ public class Demande {
     
     public void setClient(Client client) {
         this.client = client;
+    }
+    
+    public java.util.Set<DemandeStatut> getDemandeStatuts() {
+        return demandeStatuts;
+    }
+    
+    public void setDemandeStatuts(java.util.Set<DemandeStatut> demandeStatuts) {
+        this.demandeStatuts = demandeStatuts;
     }
     
     @Override

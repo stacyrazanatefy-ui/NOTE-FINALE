@@ -77,6 +77,45 @@ public interface DevisRepository extends JpaRepository<Devis, Long> {
     boolean existsByDemandeIdAndTypeDevis(Long demandeId, String typeDevis);
     
     /**
+     * Calculer le chiffre d'affaires prévisionnel total
+     */
+    @Query("SELECT COALESCE(SUM(d.montantTotal), 0) FROM Devis d")
+    Double calculateChiffreAffairesPrevisionnel();
+    
+    /**
+     * Calculer le chiffre d'affaires prévisionnel par statut
+     */
+    @Query("SELECT COALESCE(SUM(d.montantTotal), 0) FROM Devis d WHERE d.statut = :statut")
+    Double calculateChiffreAffairesPrevisionnelByStatut(@Param("statut") StatutDevis statut);
+    
+    /**
+     * Calculer le chiffre d'affaires prévisionnel par type
+     */
+    @Query("SELECT COALESCE(SUM(d.montantTotal), 0) FROM Devis d WHERE d.typeDevis = :typeDevis")
+    Double calculateChiffreAffairesPrevisionnelByType(@Param("typeDevis") String typeDevis);
+    
+    /**
+     * Calculer le chiffre d'affaires prévisionnel par période
+     */
+    @Query("SELECT COALESCE(SUM(d.montantTotal), 0) FROM Devis d WHERE d.dateCreation BETWEEN :startDate AND :endDate")
+    Double calculateChiffreAffairesPrevisionnelByPeriod(
+            @Param("startDate") LocalDateTime startDate, 
+            @Param("endDate") LocalDateTime endDate);
+    
+    /**
+     * Rechercher des devis par lieu (via la demande associée)
+     */
+    @Query("SELECT d FROM Devis d JOIN d.demande dem WHERE LOWER(dem.lieu) LIKE LOWER(CONCAT('%', :lieu, '%')) ORDER BY d.dateCreation DESC")
+    List<Devis> findByDemande_LieuContainingIgnoreCase(String lieu);
+    
+    List<Devis> findByTypeDevis(String typeDevis);
+    
+    /**
+     * Récupérer les devis par statut
+     */
+    List<Devis> findByStatut(StatutDevis statut);
+    
+    /**
      * Trouver le dernier devis d'une demande
      */
     Optional<Devis> findFirstByDemandeIdOrderByDateCreationDesc(Long demandeId);

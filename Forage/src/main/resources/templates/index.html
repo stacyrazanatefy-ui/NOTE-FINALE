@@ -80,6 +80,184 @@
             color: var(--text-primary);
         }
         
+        /* Tableau de Bord */
+        .dashboard-section {
+            padding: 2rem 0 4rem 0;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .dashboard-card {
+            display: flex;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-blue);
+        }
+        
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-blue-dark));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .dashboard-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 1.5rem;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .card-content {
+            flex: 1;
+        }
+        
+        .card-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .card-currency {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .card-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .card-arrow {
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-card:hover .card-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* Statistiques détaillées */
+        .stats-detailed {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .stats-section-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .stats-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .stats-header h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .view-all-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+        
+        .view-all-link:hover {
+            color: var(--accent-blue-dark);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+        
+        .stat-item:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-blue);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
         /* Statistiques */
         .stats-section {
             padding: 2rem 0 4rem 0;
@@ -152,13 +330,99 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--accent-blue-dark);
         }
+
+        /* Styles pour le Chiffre d'Affaires */
+        .ca-main-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.2) 100%);
+            border: 1px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .ca-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+        }
+
+        .ca-amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .ca-currency {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Styles pour la carte regroupée de devis */
+        .devis-stats-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .devis-stats-header {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .devis-stats-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin: 0;
+        }
+
+        .devis-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .devis-stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(59, 130, 246, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .devis-stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px -2px rgba(59, 130, 246, 0.15);
+        }
+
+        .devis-stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .devis-stat-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="/">Forage</a>
+            <a class="navbar-brand" href="/">ETU3641</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -174,10 +438,13 @@
                         <a class="nav-link" href="/demandes">Demandes</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/statuts">Statuts</a>
+                        <a class="nav-link" href="/options">Options</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/devis">Devis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/devis/chiffre-affaires">Chiffre d'Affaires</a>
                     </li>
                 </ul>
             </div>
@@ -193,18 +460,143 @@
         </div>
     </section>
 
-    <!-- Statistiques Section -->
-    <section class="stats-section">
+    <!-- Tableau de Bord Section -->
+    <section class="dashboard-section">
         <div class="container">
-            <h2 class="section-title">Statistiques</h2>
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-number" id="clientCount">0</div>
-                    <div class="stat-label">Clients</div>
+            <h2 class="section-title">Tableau de Bord</h2>
+            
+            <!-- Cartes principales cliquables -->
+            <div class="dashboard-grid">
+                <!-- Chiffre d'Affaires -->
+                <a href="/devis/chiffre-affaires" class="dashboard-card">
+                    <div class="card-icon">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">Chiffre d'Affaires</div>
+                        <div class="card-value" id="caTotal">0.00</div>
+                        <div class="card-currency">Ar</div>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Nombre de Devis -->
+                <a href="/devis" class="dashboard-card">
+                    <div class="card-icon">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">Nombre de Devis</div>
+                        <div class="card-value" id="totalDevis">0</div>
+                        <div class="card-subtitle">Total</div>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Nombre de Clients -->
+                <a href="/clients" class="dashboard-card">
+                    <div class="card-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">Nombre de Clients</div>
+                        <div class="card-value" id="clientCount">0</div>
+                        <div class="card-subtitle">Enregistrés</div>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Nombre de Demandes -->
+                <a href="/demandes" class="dashboard-card">
+                    <div class="card-icon">
+                        <i class="bi bi-clipboard-list"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">Nombre de Demandes</div>
+                        <div class="card-value" id="demandeCount">0</div>
+                        <div class="card-subtitle">Total</div>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Statistiques détaillées -->
+            <div class="stats-detailed">
+                <!-- Statistiques par Options de devis -->
+                <div class="stats-section-card">
+                    <div class="stats-header">
+                        <h3>Statistiques des Devis</h3>
+                        <a href="/devis" class="view-all-link">Voir tout</a>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">Créés</div>
+                            <div class="stat-value" id="devisCrees">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Acceptés</div>
+                            <div class="stat-value" id="devisAcceptes">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Rejetés</div>
+                            <div class="stat-value" id="devisRejetes">0</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="demandeCount">0</div>
-                    <div class="stat-label">Demandes</div>
+
+                <!-- Statistiques par Options de demandes -->
+                <div class="stats-section-card">
+                    <div class="stats-header">
+                        <h3>Statistiques des Demandes</h3>
+                        <a href="/demandes" class="view-all-link">Voir tout</a>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">Créées</div>
+                            <div class="stat-value" id="demandesCrees">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Confirmées</div>
+                            <div class="stat-value" id="demandesConfirmees">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Annulées</div>
+                            <div class="stat-value" id="demandesAnnulees">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+            <div class="devis-stats-card">
+                <div class="devis-stats-header">
+                    <h3 class="devis-stats-title">Statistiques des Devis</h3>
+                </div>
+                <div class="devis-stats-grid">
+                    <div class="devis-stat-item">
+                        <div class="devis-stat-number" id="totalDevis">0</div>
+                        <div class="devis-stat-label">Total Devis</div>
+                    </div>
+                    <div class="devis-stat-item">
+                        <div class="devis-stat-number" id="totalAcceptes">0</div>
+                        <div class="devis-stat-label">Devis Acceptés</div>
+                    </div>
+                    <div class="devis-stat-item">
+                        <div class="devis-stat-number" id="totalEtudes">0</div>
+                        <div class="devis-stat-label">Études</div>
+                    </div>
+                    <div class="devis-stat-item">
+                        <div class="devis-stat-number" id="totalForages">0</div>
+                        <div class="devis-stat-label">Forages</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -218,32 +610,69 @@
             // Animation des compteurs
             function animateCounter(elementId, target, duration = 2000) {
                 const element = document.getElementById(elementId);
-                const increment = target / (duration / 16);
-                let current = 0;
+                // Afficher directement la valeur cible
+                element.textContent = target.toLocaleString('fr-FR');
                 
-                const timer = setInterval(() => {
-                    current += increment;
-                    if (current >= target) {
-                        current = target;
-                        clearInterval(timer);
-                    }
-                    element.textContent = Math.floor(current);
-                }, 16);
+                // Animation subtile de l'opacité
+                element.style.opacity = '0.3';
+                setTimeout(() => {
+                    element.style.transition = 'opacity 0.5s ease';
+                    element.style.opacity = '1';
+                }, 100);
+            }
+
+            // Animation pour les montants (CA)
+            function animateAmount(elementId, target, duration = 2000) {
+                const element = document.getElementById(elementId);
+                // Afficher directement la valeur cible formatée
+                element.textContent = target.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                
+                // Animation subtile de l'opacité
+                element.style.opacity = '0.3';
+                setTimeout(() => {
+                    element.style.transition = 'opacity 0.5s ease';
+                    element.style.opacity = '1';
+                }, 100);
             }
             
             // Charger les vraies statistiques depuis l'API
-            fetch('/api/stats')
-                .then(response => response.json())
-                .then(data => {
-                    animateCounter('clientCount', data.clients);
-                    animateCounter('demandeCount', data.demandes);
-                })
-                .catch(error => {
-                    console.error('Erreur lors du chargement des statistiques:', error);
-                    // Valeurs par défaut en cas d'erreur
-                    animateCounter('clientCount', 0);
-                    animateCounter('demandeCount', 0);
-                });
+            Promise.all([
+                fetch('/api/stats').then(response => response.json()),
+                fetch('/devis/api/statistics').then(response => response.json())
+            ])
+            .then(([generalStats, devisStats]) => {
+                // Statistiques générales
+                animateCounter('clientCount', generalStats.clients || 0);
+                animateCounter('demandeCount', generalStats.demandes || 0);
+                
+                // Statistiques des devis
+                animateCounter('totalDevis', devisStats.totalDevis || 0);
+                animateCounter('devisCrees', devisStats.totalCrees || 0);
+                animateCounter('devisAcceptes', devisStats.totalAcceptes || 0);
+                animateCounter('devisRejetes', devisStats.totalRejetes || 0);
+                
+                // Statistiques des demandes
+                animateCounter('demandesCrees', generalStats.demandes || 0);
+                animateCounter('demandesConfirmees', generalStats.demandesConfirmees || 0);
+                animateCounter('demandesAnnulees', generalStats.demandesAnnulees || 0);
+                
+                // Chiffre d'affaires
+                animateAmount('caTotal', devisStats.chiffreAffairesTotal || 0);
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des statistiques:', error);
+                // Valeurs par défaut en cas d'erreur
+                animateCounter('clientCount', 0);
+                animateCounter('demandeCount', 0);
+                animateCounter('totalDevis', 0);
+                animateCounter('devisCrees', 0);
+                animateCounter('devisAcceptes', 0);
+                animateCounter('devisRejetes', 0);
+                animateCounter('demandesCrees', 0);
+                animateCounter('demandesConfirmees', 0);
+                animateCounter('demandesAnnulees', 0);
+                animateAmount('caTotal', 0);
+            });
         });
     </script>
 </body>

@@ -26,6 +26,9 @@ public class DemandeStatut {
     @Column(nullable = false)
     private LocalDateTime date;
     
+    @Column(length = 255)
+    private String observation;
+    
     // Constructeurs
     public DemandeStatut() {}
     
@@ -33,6 +36,13 @@ public class DemandeStatut {
         this.demande = demande;
         this.statut = statut;
         this.date = date;
+    }
+    
+    public DemandeStatut(Demande demande, Statut statut, LocalDateTime date, String observation) {
+        this.demande = demande;
+        this.statut = statut;
+        this.date = date;
+        this.observation = observation;
     }
     
     // Getters et Setters
@@ -68,6 +78,14 @@ public class DemandeStatut {
         this.date = date;
     }
     
+    public String getObservation() {
+        return observation;
+    }
+    
+    public void setObservation(String observation) {
+        this.observation = observation;
+    }
+    
     @Override
     public String toString() {
         return "DemandeStatut{" +
@@ -75,6 +93,7 @@ public class DemandeStatut {
                 ", demande=" + (demande != null ? demande.getId() : "null") +
                 ", statut=" + (statut != null ? statut.getLibelle() : "null") +
                 ", date=" + date +
+                ", observation='" + observation + '\'' +
                 '}';
     }
 }

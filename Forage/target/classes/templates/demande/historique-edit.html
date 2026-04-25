@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Modifier l'historique</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --bg-dark: #0a0c10;
+            --bg-secondary: #111315;
+            --bg-tertiary: #1a1d21;
+            --bg-card: #1e2127;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-blue: #3b82f6;
+            --accent-blue-dark: #2563eb;
+            --accent-red: #ef4444;
+            --accent-red-dark: #dc2626;
+            --border-color: #2a2e35;
+            --success-green: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --error-red: #ef4444;
+            --error-bg: rgba(239, 68, 68, 0.1);
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue) !important;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .nav-link:hover {
+            color: var(--accent-blue) !important;
+        }
+        
+        /* Cards */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 1rem 1.5rem;
+        }
+        
+        .card-header h4, .card-header h6 {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Labels */
+        .form-label {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Champs de formulaire */
+        .form-control, .form-select {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+        
+        /* Alertes */
+        .alert {
+            border: none;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .alert-success {
+            background-color: var(--success-bg);
+            color: var(--success-green);
+            border-left: 3px solid var(--success-green);
+        }
+        
+        .alert-danger {
+            background-color: var(--error-bg);
+            color: var(--error-red);
+            border-left: 3px solid var(--error-red);
+        }
+        
+        .alert-dismissible .btn-close {
+            filter: brightness(0) invert(1);
+            opacity: 0.5;
+            padding: 1rem;
+        }
+        
+        /* Boutons */
+        .btn {
+            font-weight: 500;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-blue-dark);
+            border-color: var(--accent-blue-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--bg-dark);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        /* Layout */
+        .container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        
+        /* Espacements */
+        .mb-3 {
+            margin-bottom: 1rem !important;
+        }
+        
+        .mt-1 {
+            margin-top: 0.25rem !important;
+        }
+        
+        .mt-2 {
+            margin-top: 0.5rem !important;
+        }
+        
+        .mt-3 {
+            margin-top: 1rem !important;
+        }
+        
+        /* Grid */
+        .d-grid {
+            display: grid;
+        }
+        
+        .gap-2 {
+            gap: 0.5rem;
+        }
+        
+        /* Badges */
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .badge.bg-primary {
+            background-color: var(--accent-blue) !important;
+        }
+        
+        .badge.bg-danger {
+            background-color: var(--accent-red) !important;
+        }
+        
+        .badge.bg-success {
+            background-color: var(--success-green) !important;
+        }
+        
+        .badge.bg-info {
+            background-color: #06b6d4 !important;
+        }
+        
+        /* Texte secondaire */
+        .text-secondary {
+            color: var(--text-secondary) !important;
+        }
+        
+        .small {
+            font-size: 0.75rem !important;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card-header {
+                padding: 0.875rem 1rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .d-md-flex {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .row .col-md-4 {
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">ETU3641</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/clients">Clients</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/demandes">Demandes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/options">Options</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/devis">Devis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/devis/chiffre-affaires">Chiffre d'Affaires</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Formulaire de modification -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0" th:text="${title}">Modifier l'historique</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" th:action="@{/demandes/historique/update}">
+                            <input type="hidden" name="id" th:value="${demandeStatut.id}">
+                            
+                            <!-- Informations actuelles -->
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="alert alert-info" style="background-color: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--accent-blue); color: var(--accent-blue);">
+                                        <strong>Informations actuelles :</strong>
+                                        <div class="mt-2">
+                                            <strong>ID Demande :</strong> <span th:text="${demandeStatut.demande.id}">1</span><br>
+                                            <strong>Date actuelle :</strong> <span th:text="${#temporals.format(demandeStatut.date, 'dd/MM/yyyy à HH:mm')}">01/01/2024 à 10:30</span><br>
+                                            <strong>Statut actuel :</strong> 
+                                            <span class="badge" 
+                                                  th:classappend="${#strings.contains(demandeStatut.statut.libelle, 'CREEE') ? 'bg-primary' : 
+                                                                 #strings.contains(demandeStatut.statut.libelle, 'ANNULEE') ? 'bg-danger' : 
+                                                                 #strings.contains(demandeStatut.statut.libelle, 'CONFIRMEE') ? 'bg-info' : 'bg-success'}"
+                                                  th:text="${demandeStatut.statut.libelle}">
+                                                Statut
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Nouveau statut -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="statutLibelle" class="form-label">Nouveau statut</label>
+                                    <select name="statutLibelle" id="statutLibelle" class="form-select" required>
+                                        <option value="">-- Choisir un statut --</option>
+                                        <option th:each="statut : ${statuts}" 
+                                                th:value="${statut.libelle}" 
+                                                th:text="${statut.libelle}"
+                                                th:selected="${demandeStatut.statut.libelle == statut.libelle}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="observation" class="form-label">Observation</label>
+                                    <input type="text" 
+                                           name="observation" 
+                                           id="observation" 
+                                           class="form-control" 
+                                           th:value="${demandeStatut.observation}"
+                                           placeholder="Description du changement de statut..."
+                                           maxlength="255">
+                                </div>
+                            </div>
+                            
+                            <!-- Boutons -->
+                            <div class="d-flex justify-content-between">
+                                <a th:href="@{/demandes/historique/{id}(id=${demandeStatut.demande.id})}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i> Retour à l'historique
+                                </a>
+                                <div>
+                                    <button type="reset" class="btn btn-outline-secondary me-2">
+                                        <i class="bi bi-arrow-clockwise"></i> Réinitialiser
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-lg"></i> Mettre à jour
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

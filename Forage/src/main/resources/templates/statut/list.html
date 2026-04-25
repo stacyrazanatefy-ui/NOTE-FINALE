@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title}">Liste des Statuts</title>
+    <title th:text="${title}">Liste des Options</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -232,6 +232,108 @@
             opacity: 1;
         }
         
+        /* Styles pour les badges de statut */
+        .badge-creee {
+            background-color: #3b82f6;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .badge-en-cours {
+            background-color: #f59e0b;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .badge-en-attente {
+            background-color: #8b5cf6;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .badge-terminee {
+            background-color: #6b7280;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .badge-acceptee {
+            background-color: #10b981;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .badge-confirmee {
+            background-color: #10b981;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .badge-refusee {
+            background-color: #ef4444;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .badge-annulee {
+            background-color: #ef4444;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .badge-en-traitement {
+            background-color: #06b6d4;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .badge-a-valider {
+            background-color: #f97316;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .badge-cloturee {
+            background-color: #6b7280;
+            color: white;
+            font-weight: 500;
+        }
+        
+        /* Styles pour le tableau sombre */
+        .table-dark {
+            --bs-table-bg: var(--bg-card);
+            --bs-table-striped-bg: var(--bg-tertiary);
+            --bs-table-hover-bg: var(--bg-secondary);
+            --bs-table-border-color: var(--border-color);
+            --bs-table-color: var(--text-primary);
+        }
+        
+        /* Styles pour les liens d'action */
+        .action-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .action-link:hover {
+            background-color: var(--accent-blue-soft);
+            color: var(--accent-blue-dark);
+            transform: translateY(-1px);
+        }
+        
+        .action-link.primary:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+        }
+        
+        .action-link.danger:hover {
+            background-color: rgba(248, 113, 113, 0.1);
+            color: #dc2626;
+        }
+        
         /* Badges - palette bleue cohérente */
         .badge {
             font-size: 0.7rem;
@@ -362,7 +464,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="/">Forage</a>
+            <a class="navbar-brand" href="/">ETU3641</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -378,10 +480,13 @@
                         <a class="nav-link" href="/demandes">Demandes</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/statuts">Statuts</a>
+                        <a class="nav-link active" href="/options">Options</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link " href="/devis">Devis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/devis/chiffre-affaires">Chiffre d'Affaires</a>
                     </li>
                 </ul>
             </div>
@@ -411,40 +516,50 @@
                 </div>
             </div>
             <div class="card-body">
-                <!-- Tableau des statuts -->
+                <!-- Tableau des Statuts -->
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
+                    <table class="table table-dark table-hover">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th style="width: 60px">ID</th>
                                 <th>Libellé</th>
                                 <th>Actions</th>
-                            </thead>
+                            </tr>
+                        </thead>
                         <tbody>
-                            <tr th:if="${statuts.empty}">
-                                <td colspan="3" class="text-center text-secondary">
-                                    Aucun statut trouvé
-                                 </td>
-                             </tr>
+                            <tr th:if="${statuts == null or statuts.empty}">
+                                <td colspan="3" class="text-center text-secondary py-5">
+                                    <div class="py-3">
+                                        <h6 class="mb-2">Aucun statut trouvé</h6>
+                                        <p class="mb-3 small">
+                                            Les statuts par défaut (DEMANDE_CREEE, DEMANDE_CONFIRMEE, DEMANDE_TERMINEE, DEMANDE_ANNULEE) 
+                                            devraient être créés automatiquement au démarrage de l'application.
+                                        </p>
+                                        <a href="/statuts/new" class="btn btn-primary btn-sm">
+                                            Ajouter le premier statut
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
                             <tr th:each="statut : ${statuts}">
                                 <td th:text="${statut.id}">1</td>
                                 <td>
-                                    <span class="badge badge-statut" 
-                                          th:classappend="${#strings.contains(statut.libelle, 'CREEE') ? 'bg-primary' : 
-                                                         #strings.contains(statut.libelle, 'ANNULEE') ? 'bg-danger' : 'bg-success'}"
+                                    <span class="badge badge-statut bg-primary" 
                                           th:text="${statut.libelle}">
                                         Statut
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="btn-group" role="group">
+                                    <div class="d-flex gap-2">
                                         <a th:href="@{/statuts/edit/{id}(id=${statut.id})}" 
-                                           class="btn btn-warning btn-sm">
+                                           class="action-link primary"
+                                           title="Modifier">
                                             Modifier
                                         </a>
                                         <a th:href="@{/statuts/delete/{id}(id=${statut.id})}" 
-                                           class="btn btn-danger btn-sm"
-                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce statut ?')">
+                                           class="action-link danger"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce statut ?')"
+                                           title="Supprimer">
                                             Supprimer
                                         </a>
                                     </div>

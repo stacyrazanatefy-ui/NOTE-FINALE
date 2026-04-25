@@ -96,4 +96,11 @@ public class ClientService {
     public List<Client> getAllClientsWithDemandes() {
         return clientRepository.findAllWithDemandes();
     }
+    
+    /**
+     * Récupère les demandes d'un client spécifique
+     */
+    public List<com.example.forage.model.Demande> getDemandesByClientId(Long clientId) {
+        return clientRepository.findDemandesByClientId(clientId);
+    }
 }

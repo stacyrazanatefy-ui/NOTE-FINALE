@@ -134,6 +134,12 @@
             border-left: 3px solid var(--error-red);
         }
         
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border-left: 3px solid var(--accent-green);
+        }
+        
         /* Boutons */
         .btn {
             font-weight: 500;
@@ -282,7 +288,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="/">Forage</a>
+            <a class="navbar-brand" href="/">ETU3641</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -298,10 +304,13 @@
                         <a class="nav-link" href="/demandes">Demandes</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/statuts">Statuts</a>
+                        <a class="nav-link active" href="/options">Options</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link " href="/devis">Devis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/devis/chiffre-affaires">Chiffre d'Affaires</a>
                     </li>
                 </ul>
             </div>
@@ -316,12 +325,15 @@
                         <h4 class="mb-0" th:text="${title}">Formulaire Statut</h4>
                     </div>
                     <div class="card-body">
-                        <!-- Messages d'erreur -->
+                        <!-- Messages -->
+                        <div th:if="${success}" class="alert alert-success" role="alert">
+                            <span th:text="${success}"></span>
+                        </div>
                         <div th:if="${error}" class="alert alert-danger" role="alert">
                             <span th:text="${error}"></span>
                         </div>
 
-                        <form th:action="${action}" method="post" th:object="${statut}">
+                        <form th:action="*{id} ? '/statuts/update' : '/statuts/save'" method="post" th:object="${statut}">
                             <!-- Champ ID pour la modification -->
                             <input type="hidden" th:if="*{id}" th:field="*{id}">
                             
@@ -359,7 +371,7 @@
                 <!-- Informations supplémentaires -->
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h6 class="mb-0">Statuts par défaut</h6>
+                        <h6 class="mb-0">Options par défaut</h6>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -369,12 +381,15 @@
                             <div class="col-md-4 mb-2 mb-md-0">
                                 <span class="badge bg-danger">DEMANDE_ANNULEE</span>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4 mb-2 mb-md-0">
+                                <span class="badge bg-info">DEMANDE_CONFIRMEE</span>
+                            </div>
+                            <div class="col-md-4 mb-2 mb-md-0">
                                 <span class="badge bg-success">DEMANDE_TERMINEE</span>
                             </div>
                         </div>
                         <div class="text-secondary small mt-2">
-                            Ces statuts sont créés automatiquement au démarrage de l'application.
+                            Ces Options sont créés automatiquement au démarrage de l'application.
                         </div>
                     </div>
                 </div>

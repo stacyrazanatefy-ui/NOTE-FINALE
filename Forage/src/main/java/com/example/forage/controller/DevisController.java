@@ -5,6 +5,9 @@ import com.example.forage.model.DevisDetails;
 import com.example.forage.model.Demande;
 import com.example.forage.service.DevisService;
 import com.example.forage.service.DemandeService;
+import com.example.forage.service.ClientService;
+import com.example.forage.service.StatutDevisService;
+import com.example.forage.service.TypeDevisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -29,15 +32,174 @@ public class DevisController {
     @Autowired
     private DemandeService demandeService;
     
+    @Autowired
+    private ClientService clientService;
+    
+    @Autowired
+    private StatutDevisService statutDevisService;
+    
+    @Autowired
+    private TypeDevisService typeDevisService;
+    
     /**
-     * Affiche la liste de tous les devis
+     * API pour récupérer le chiffre d'affaires prévisionnel
+     */
+    @GetMapping("/api/chiffre-affaires")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getChiffreAffairesPrevisionnel() {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            Double caTotal = devisService.getChiffreAffairesPrevisionnel();
+            Double caCrees = devisService.getChiffreAffairesPrevisionnelByStatut(Devis.StatutDevis.CREE);
+            Double caAcceptes = devisService.getChiffreAffairesPrevisionnelByStatut(Devis.StatutDevis.ACCEPTE);
+            Double caRefuses = devisService.getChiffreAffairesPrevisionnelByStatut(Devis.StatutDevis.REFUSE);
+            Double caEtudes = devisService.getChiffreAffairesPrevisionnelByType("Etude");
+            Double caForages = devisService.getChiffreAffairesPrevisionnelByType("Forage");
+            
+            response.put("success", true);
+            response.put("caTotal", caTotal);
+            response.put("caCrees", caCrees);
+            response.put("caAcceptes", caAcceptes);
+            response.put("caRefuses", caRefuses);
+            response.put("caEtudes", caEtudes);
+            response.put("caForages", caForages);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Erreur: " + e.getMessage());
+        }
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * API pour les statistiques de devis (utilisé dans l'accueil)
+     */
+    @GetMapping("/api/statistics")
+    @ResponseBody
+    public ResponseEntity<DevisService.DevisStatistics> getDevisStatistics() {
+        try {
+            DevisService.DevisStatistics stats = devisService.getStatistics();
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+    
+    /**
+     * Affiche la page du Chiffre d'Affaires
+     */
+    @GetMapping("/chiffre-affaires")
+    public String chiffreAffaires(Model model) {
+        DevisService.DevisStatistics stats = devisService.getStatistics();
+        model.addAttribute("statistics", stats);
+        model.addAttribute("title", "Chiffre d'Affaires");
+        return "devis/chiffre-affaires";
+    }
+    
+    /**
+     * Affiche la liste de tous les devis avec filtres
      */
     @GetMapping
-    public String listDevis(Model model) {
-        List<Devis> devis = devisService.getAllDevisWithDemandeAndClient();
+    public String listDevis(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String selectedStatut,
+            @RequestParam(required = false) String selectedType,
+            @RequestParam(required = false) Long demandeId,
+            @RequestParam(required = false) Long clientId,
+            Model model) {
+        
+        List<Devis> devis;
+        
+        // Appliquer les filtres
+        if (demandeId != null) {
+            // Filtrer par demande spécifique
+            devis = devisService.getDevisByDemande(demandeId);
+        } else if (clientId != null) {
+            // Filtrer par client spécifique
+            devis = devisService.getDevisByClient(clientId);
+        } else if (search != null && !search.isEmpty()) {
+            devis = devisService.searchDevisByLieu(search);
+        } else if (selectedStatut != null && !selectedStatut.isEmpty()) {
+            devis = devisService.getDevisByStatut(selectedStatut);
+        } else if (selectedType != null && !selectedType.isEmpty()) {
+            devis = devisService.getDevisByType(selectedType);
+        } else {
+            devis = devisService.getAllDevisWithDemandeAndClient();
+        }
+        
+        // Compter les devis par statut
+        java.util.Map<String, Long> statutCounts = new java.util.HashMap<>();
+        for (Devis dev : devis) {
+            String statutLibelle = dev.getStatutLibelle();
+            statutCounts.put(statutLibelle, statutCounts.getOrDefault(statutLibelle, 0L) + 1);
+        }
+        
         model.addAttribute("devis", devis);
+        model.addAttribute("statutCounts", statutCounts);
+        model.addAttribute("statutsDevis", statutDevisService.getAllStatutsDevis());
         model.addAttribute("title", "Liste des Devis");
         model.addAttribute("statistics", devisService.getStatistics());
+        model.addAttribute("search", search);
+        model.addAttribute("selectedStatut", selectedStatut);
+        model.addAttribute("selectedType", selectedType);
+        model.addAttribute("selectedType", selectedType);
+        model.addAttribute("demandeId", demandeId);
+        model.addAttribute("clientId", clientId);
+        model.addAttribute("typesDevis", typeDevisService.getAllTypesDevis());
+        
+        // Ajouter les informations de la demande au modèle
+        if (demandeId != null) {
+            Optional<Demande> demandeOpt = demandeService.getDemandeById(demandeId);
+            demandeOpt.ifPresent(demande -> model.addAttribute("filteredDemande", demande));
+        }
+        
+        // Ajouter les informations du client au modèle
+        if (clientId != null) {
+            Optional<com.example.forage.model.Client> clientOpt = clientService.getClientById(clientId);
+            clientOpt.ifPresent(client -> model.addAttribute("filteredClient", client));
+        }
+        
+        return "devis/list";
+    }
+    
+    /**
+     * Affiche les devis d'une demande spécifique
+     */
+    @GetMapping("/demande/{demandeId}")
+    public String listDevisByDemande(@PathVariable Long demandeId, Model model) {
+        Optional<Demande> demandeOpt = demandeService.getDemandeById(demandeId);
+        if (demandeOpt.isEmpty()) {
+            return "redirect:/demandes";
+        }
+        
+        Demande demande = demandeOpt.get();
+        List<Devis> devis = devisService.getDevisByDemande(demandeId);
+        
+        // S'il y a des devis, rediriger vers le premier devis
+        if (!devis.isEmpty()) {
+            return "redirect:/devis/" + devis.get(0).getId();
+        }
+        
+        // Sinon, afficher la liste vide
+        model.addAttribute("devis", devis);
+        model.addAttribute("demande", demande);
+        model.addAttribute("title", "Devis pour la demande #" + demandeId + " - " + demande.getLieu());
+        model.addAttribute("statistics", devisService.getStatistics());
+        
+        // Ajouter les variables pour les filtres (vides dans ce cas)
+        model.addAttribute("search", null);
+        model.addAttribute("selectedStatut", null);
+        
+        // Compter les devis par statut
+        java.util.Map<String, Long> statutCounts = new java.util.HashMap<>();
+        for (Devis dev : devis) {
+            String statutLibelle = dev.getStatut().name();
+            statutCounts.put(statutLibelle, statutCounts.getOrDefault(statutLibelle, 0L) + 1);
+        }
+        model.addAttribute("statutCounts", statutCounts);
+        
         return "devis/list";
     }
     
@@ -48,6 +210,8 @@ public class DevisController {
     public String showCreateForm(Model model) {
         model.addAttribute("devis", new Devis());
         model.addAttribute("title", "Ajouter un Devis");
+        model.addAttribute("typesDevis", typeDevisService.getAllTypesDevis());
+        model.addAttribute("statutsDevis", statutDevisService.getAllStatutsDevis());
         return "devis/form";
     }
     
@@ -137,6 +301,11 @@ public class DevisController {
             @RequestParam("details_quantite[]") Integer[] quantites,
             RedirectAttributes redirectAttributes) {
         
+        System.out.println("=== APPEL DE saveDevis (CRÉATION) ===");
+        System.out.println("ATTENTION: Cette méthode ne devrait pas être appelée en mode modification !");
+        
+        // ... reste de la méthode
+        
         try {
             // 1. Récupérer la demande
             Optional<Demande> demandeOpt = demandeService.getDemandeById(demandeId);
@@ -202,6 +371,7 @@ public class DevisController {
         if (devisOpt.isPresent()) {
             model.addAttribute("devis", devisOpt.get());
             model.addAttribute("title", "Détails du Devis #" + id);
+            model.addAttribute("statutsDevis", statutDevisService.getAllStatutsDevis());
             return "devis/details";
         } else {
             redirectAttributes.addFlashAttribute("error", "Devis non trouvé");
@@ -218,10 +388,76 @@ public class DevisController {
         if (devisOpt.isPresent()) {
             model.addAttribute("devis", devisOpt.get());
             model.addAttribute("title", "Modifier un Devis");
+            model.addAttribute("typesDevis", typeDevisService.getAllTypesDevis());
+            model.addAttribute("statutsDevis", statutDevisService.getAllStatutsDevis());
             return "devis/form";
         } else {
             redirectAttributes.addFlashAttribute("error", "Devis non trouvé");
             return "redirect:/devis";
+        }
+    }
+    
+    /**
+     * Met à jour un devis existant
+     */
+    @PostMapping("/update")
+    public String updateDevis(
+            @RequestParam Long id,
+            @RequestParam Long demandeId,
+            @RequestParam String typeDevis,
+            @RequestParam(value = "details_id[]", required = false) Long[] detailsIds,
+            @RequestParam(value = "details_deleted[]", required = false) String[] detailsDeleted,
+            @RequestParam("details_libelle[]") String[] libelles,
+            @RequestParam("details_prixUnitaire[]") Double[] prixUnitaires,
+            @RequestParam("details_quantite[]") Integer[] quantites,
+            RedirectAttributes redirectAttributes) {
+        
+        System.out.println("=== DEBUG updateDevis CONTROLLER ===");
+        System.out.println("ID: " + id);
+        System.out.println("DemandeID: " + demandeId);
+        System.out.println("TypeDevis: " + typeDevis);
+        System.out.println("DetailsIds: " + java.util.Arrays.toString(detailsIds));
+        System.out.println("DetailsDeleted: " + java.util.Arrays.toString(detailsDeleted));
+        System.out.println("Libelles: " + java.util.Arrays.toString(libelles));
+        System.out.println("PrixUnitaires: " + java.util.Arrays.toString(prixUnitaires));
+        System.out.println("Quantites: " + java.util.Arrays.toString(quantites));
+        
+        try {
+            // Récupérer le devis existant
+            Optional<Devis> devisOpt = devisService.getDevisByIdWithDetails(id);
+            if (devisOpt.isEmpty()) {
+                System.out.println("Devis non trouvé!");
+                redirectAttributes.addFlashAttribute("error", "Devis non trouvé");
+                return "redirect:/devis";
+            }
+            
+            // Récupérer la demande
+            Optional<Demande> demandeOpt = demandeService.getDemandeById(demandeId);
+            if (!demandeOpt.isPresent()) {
+                System.out.println("Demande non trouvée!");
+                redirectAttributes.addFlashAttribute("error", "Demande non trouvée");
+                return "redirect:/devis/edit/" + id;
+            }
+            
+            Demande demande = demandeOpt.get();
+            Devis devis = devisOpt.get();
+            
+            // Mettre à jour les informations de base
+            devis.setDemande(demande);
+            devis.setTypeDevis(typeDevis);
+            
+            System.out.println("Appel du service updateDevisWithDetails...");
+            // Mettre à jour les détails et calculer le nouveau total
+            devisService.updateDevisWithDetails(devis, detailsIds, detailsDeleted, libelles, prixUnitaires, quantites);
+            
+            System.out.println("Succès de la mise à jour!");
+            redirectAttributes.addFlashAttribute("success", "Devis modifié avec succès");
+            return "redirect:/devis";
+        } catch (Exception e) {
+            System.out.println("ERREUR: " + e.getMessage());
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de la modification: " + e.getMessage());
+            return "redirect:/devis/edit/" + id;
         }
     }
     
@@ -233,11 +469,11 @@ public class DevisController {
                              @RequestParam String nouveauStatut,
                              RedirectAttributes redirectAttributes) {
         try {
-            Devis.StatutDevis statut = Devis.StatutDevis.valueOf(nouveauStatut.toUpperCase());
-            Devis updatedDevis = devisService.updateStatutDevis(devisId, statut);
+            // Utiliser la nouvelle méthode qui gère les libellés dynamiques
+            Devis updatedDevis = devisService.updateStatutDevisByLibelle(devisId, nouveauStatut);
             
             if (updatedDevis != null) {
-                redirectAttributes.addFlashAttribute("success", "Statut mis à jour avec succès");
+                redirectAttributes.addFlashAttribute("success", "Statut mis à jour avec succès: " + nouveauStatut);
             } else {
                 redirectAttributes.addFlashAttribute("error", "Devis non trouvé");
             }

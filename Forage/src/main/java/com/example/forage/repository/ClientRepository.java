@@ -37,4 +37,10 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
      */
     @Query("SELECT DISTINCT c FROM Client c LEFT JOIN FETCH c.demandes ORDER BY c.nom")
     List<Client> findAllWithDemandes();
+    
+    /**
+     * Récupère les demandes d'un client spécifique
+     */
+    @Query("SELECT d FROM Demande d WHERE d.client.id = :clientId ORDER BY d.date DESC")
+    List<com.example.forage.model.Demande> findDemandesByClientId(Long clientId);
 }
